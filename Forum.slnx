@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Forum.Api/Forum.Api.csproj" />
+  <Project Path="Forum.Web/Forum.Web.csproj" />
+</Solution>

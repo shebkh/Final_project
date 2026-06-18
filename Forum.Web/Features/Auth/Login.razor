@@ -1,0 +1,59 @@
+@* Forum.Web/Features/Auth/Login.razor *@
+@page "/login"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAuthManager AuthManager
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Sign in</PageTitle>
+
+<div class="auth-card">
+    <h1>Sign in</h1>
+
+    <EditForm Model="_model" OnValidSubmit="HandleSubmitAsync" FormName="login">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label for="identifier">Username or email</label>
+            <InputText id="identifier" class="form-control" @bind-Value="_model.UserNameOrEmail" />
+            <ValidationMessage For="() => _model.UserNameOrEmail" />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <InputText id="password" type="password" class="form-control" @bind-Value="_model.Password" />
+            <ValidationMessage For="() => _model.Password" />
+        </div>
+
+        @if (_error is not null)
+        {
+            <p class="auth-error" role="alert">@_error</p>
+        }
+
+        <button type="submit" class="btn btn-primary" disabled="@_busy">
+            @(_busy ? "Signing in…" : "Sign in")
+        </button>
+    </EditForm>
+
+    <p class="auth-switch">No account? <a href="/register">Register</a></p>
+</div>
+
+@code {
+    private readonly LoginModel _model = new();
+    private string? _error;
+    private bool _busy;
+
+    private async Task HandleSubmitAsync()
+    {
+        _busy = true;
+        _error = null;
+
+        var outcome = await AuthManager.LoginAsync(_model);
+        _busy = false;
+
+        if (outcome.Succeeded)
+            Navigation.NavigateTo("/");
+        else
+            _error = outcome.Error;
+    }
+}

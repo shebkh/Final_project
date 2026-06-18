@@ -1,0 +1,39 @@
+@* Forum.Web/Components/Layout/MainLayout.razor *@
+@inherits LayoutComponentBase
+@rendermode InteractiveServer
+@inject IAuthManager AuthManager
+@inject NavigationManager Navigation
+
+<header class="top-bar">
+    <a class="brand" href="/">Discussion Forum</a>
+    <nav class="top-nav">
+        <AuthorizeView>
+            <Authorized>
+                <span class="greeting">Hi, @context.User.Identity?.Name</span>
+                <button class="btn btn-link" @onclick="LogoutAsync">Sign out</button>
+            </Authorized>
+            <NotAuthorized>
+                <a href="/login">Sign in</a>
+                <a href="/register">Register</a>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</header>
+
+<main class="content">
+    @Body
+</main>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private async Task LogoutAsync()
+    {
+        await AuthManager.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+}

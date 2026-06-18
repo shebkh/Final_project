@@ -1,0 +1,16 @@
+@* Forum.Web/Components/Pages/Home.razor *@
+@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Discussion Forum</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <p>Welcome back, <strong>@context.User.Identity?.Name</strong>. Threads coming soon.</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>A place to start discussions and reply to others.</p>
+        <p><a href="/login">Sign in</a> or <a href="/register">create an account</a> to get started.</p>
+    </NotAuthorized>
+</AuthorizeView>
