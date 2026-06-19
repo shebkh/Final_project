@@ -1,5 +1,6 @@
 // Forum.Api/Data/AppDbContext.cs
 using Forum.Api.Features.Auth;
+using Forum.Api.Features.Threads;
 using Microsoft.EntityFrameworkCore;
 
 namespace Forum.Api.Data;
@@ -11,6 +12,7 @@ namespace Forum.Api.Data;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<ForumThread> Threads => Set<ForumThread>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,6 +36,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             // Usernames and emails must be unique across the platform.
             entity.HasIndex(u => u.UserName).IsUnique();
             entity.HasIndex(u => u.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<ForumThread>(entity =>
+        {
+            entity.ToTable("Threads");
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Title)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(t => t.Body)
+                .IsRequired()
+                .HasMaxLength(10_000);
+
+            // A thread belongs to one author; deleting a user is blocked while
+            // they still own threads (Restrict) to preserve discussion history.
+            entity.HasOne(t => t.Author)
+                .WithMany()
+                .HasForeignKey(t => t.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Listing is ordered newest-first, so index the creation timestamp.
+            entity.HasIndex(t => t.CreatedAtUtc);
         });
     }
 }

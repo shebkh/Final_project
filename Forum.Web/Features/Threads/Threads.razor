@@ -1,0 +1,60 @@
+@* Forum.Web/Features/Threads/Threads.razor *@
+@page "/threads"
+@inject IThreadApiClient ThreadApi
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Threads</PageTitle>
+
+<div class="threads-header">
+    <h1>Threads</h1>
+    <AuthorizeView>
+        <Authorized>
+            <a class="btn btn-primary btn-inline" href="/threads/new">Start a thread</a>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+@if (_loading)
+{
+    <p>Loading threads…</p>
+}
+else if (_error is not null)
+{
+    <p class="auth-error" role="alert">@_error</p>
+}
+else if (_threads.Count == 0)
+{
+    <p>No threads yet. Be the first to start a discussion.</p>
+}
+else
+{
+    <ul class="thread-list">
+        @foreach (var thread in _threads)
+        {
+            <li class="thread-card">
+                <a class="thread-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
+                <p class="thread-excerpt">@thread.Excerpt</p>
+                <div class="thread-meta">
+                    by <strong>@thread.AuthorUserName</strong>
+                    · @thread.CreatedAtUtc.ToLocalTime().ToString("g")
+                </div>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private IReadOnlyList<ThreadSummaryResponse> _threads = [];
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var outcome = await ThreadApi.ListAsync();
+        if (outcome.Succeeded)
+            _threads = outcome.Data!;
+        else
+            _error = outcome.Error;
+        _loading = false;
+    }
+}

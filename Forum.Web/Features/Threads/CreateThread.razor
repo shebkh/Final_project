@@ -1,0 +1,38 @@
+@* Forum.Web/Features/Threads/CreateThread.razor *@
+@page "/threads/new"
+@attribute [Authorize]
+@inject IThreadApiClient ThreadApi
+@inject NavigationManager Navigation
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Start a thread</PageTitle>
+
+<div class="auth-card auth-card-wide">
+    <h1>Start a thread</h1>
+    <ThreadForm Model="_model"
+                OnSubmit="HandleSubmitAsync"
+                SubmitLabel="Post thread"
+                CancelHref="/threads"
+                Busy="_busy"
+                Error="_error" />
+</div>
+
+@code {
+    private readonly ThreadEditModel _model = new();
+    private bool _busy;
+    private string? _error;
+
+    private async Task HandleSubmitAsync()
+    {
+        _busy = true;
+        _error = null;
+
+        var outcome = await ThreadApi.CreateAsync(_model);
+        _busy = false;
+
+        if (outcome.Succeeded)
+            Navigation.NavigateTo($"/threads/{outcome.Data!.Id}");
+        else
+            _error = outcome.Error;
+    }
+}

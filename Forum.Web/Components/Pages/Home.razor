@@ -7,10 +7,11 @@
 
 <AuthorizeView>
     <Authorized>
-        <p>Welcome back, <strong>@context.User.Identity?.Name</strong>. Threads coming soon.</p>
+        <p>Welcome back, <strong>@context.User.Identity?.Name</strong>.</p>
+        <p><a href="/threads">Browse threads</a> or <a href="/threads/new">start a new one</a>.</p>
     </Authorized>
     <NotAuthorized>
         <p>A place to start discussions and reply to others.</p>
-        <p><a href="/login">Sign in</a> or <a href="/register">create an account</a> to get started.</p>
+        <p><a href="/threads">Browse threads</a>, or <a href="/login">sign in</a> / <a href="/register">create an account</a> to post.</p>
     </NotAuthorized>
 </AuthorizeView>

@@ -1,0 +1,85 @@
+@* Forum.Web/Features/Threads/EditThread.razor *@
+@page "/threads/{Id:int}/edit"
+@attribute [Authorize]
+@inject IThreadApiClient ThreadApi
+@inject NavigationManager Navigation
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Edit thread</PageTitle>
+
+<div class="auth-card auth-card-wide">
+    <h1>Edit thread</h1>
+
+    @if (_loading)
+    {
+        <p>Loading…</p>
+    }
+    else if (_loadError is not null)
+    {
+        <p class="auth-error" role="alert">@_loadError</p>
+        <a class="btn btn-link-dark" href="/threads">Back to threads</a>
+    }
+    else
+    {
+        <ThreadForm Model="_model"
+                    OnSubmit="HandleSubmitAsync"
+                    SubmitLabel="Save changes"
+                    CancelHref="@($"/threads/{Id}")"
+                    Busy="_busy"
+                    Error="_error" />
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private readonly ThreadEditModel _model = new();
+    private bool _loading = true;
+    private bool _busy;
+    private string? _loadError;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var outcome = await ThreadApi.GetByIdAsync(Id);
+        if (!outcome.Succeeded)
+        {
+            _loadError = outcome.Error;
+        }
+        else if (await CurrentUserIdAsync() != outcome.Data!.AuthorId)
+        {
+            // Server enforces this too (403 on PUT); checking here avoids showing
+            // a non-owner an editable form they could never save.
+            _loadError = "You can only edit your own threads.";
+        }
+        else
+        {
+            _model.Title = outcome.Data!.Title;
+            _model.Body = outcome.Data.Body;
+        }
+        _loading = false;
+    }
+
+    private async Task<int?> CurrentUserIdAsync()
+    {
+        if (AuthState is null) return null;
+        var user = (await AuthState).User;
+        var raw = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(raw, out var id) ? id : null;
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        _busy = true;
+        _error = null;
+
+        var outcome = await ThreadApi.UpdateAsync(Id, _model);
+        _busy = false;
+
+        if (outcome.Succeeded)
+            Navigation.NavigateTo($"/threads/{Id}");
+        else
+            _error = outcome.Error;
+    }
+}

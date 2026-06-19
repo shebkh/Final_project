@@ -1,0 +1,41 @@
+@* Forum.Web/Features/Threads/ThreadForm.razor *@
+@* Reusable thread editor. Child→parent submit via EventCallback. *@
+
+<EditForm Model="Model" OnValidSubmit="OnValidSubmitAsync" FormName="thread-form">
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label for="title">Title</label>
+        <InputText id="title" class="form-control" @bind-Value="Model.Title" />
+        <ValidationMessage For="() => Model.Title" />
+    </div>
+
+    <div class="form-group">
+        <label for="body">Body</label>
+        <InputTextArea id="body" class="form-control" rows="10" @bind-Value="Model.Body" />
+        <ValidationMessage For="() => Model.Body" />
+    </div>
+
+    @if (Error is not null)
+    {
+        <p class="auth-error" role="alert">@Error</p>
+    }
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-inline" disabled="@Busy">
+            @(Busy ? $"{SubmitLabel}…" : SubmitLabel)
+        </button>
+        <a class="btn btn-link-dark" href="@CancelHref">Cancel</a>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public ThreadEditModel Model { get; set; } = default!;
+    [Parameter, EditorRequired] public EventCallback OnSubmit { get; set; }
+    [Parameter] public string SubmitLabel { get; set; } = "Save";
+    [Parameter] public string CancelHref { get; set; } = "/threads";
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public string? Error { get; set; }
+
+    private Task OnValidSubmitAsync() => OnSubmit.InvokeAsync();
+}

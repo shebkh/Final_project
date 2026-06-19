@@ -2,6 +2,7 @@
 using Blazored.LocalStorage;
 using Forum.Web.Components;
 using Forum.Web.Features.Auth;
+using Forum.Web.Features.Threads;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,9 @@ builder.Services.AddCascadingAuthenticationState();
 
 // Auth feature slice (token store, state provider, typed HttpClient).
 builder.Services.AddAuthFeature(builder.Configuration);
+
+// Threads feature slice (typed HttpClient; reuses AuthTokenHandler from Auth).
+builder.Services.AddThreadsFeature(builder.Configuration);
 
 var app = builder.Build();
 

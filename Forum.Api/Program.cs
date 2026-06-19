@@ -3,6 +3,7 @@ using System.Text;
 using Forum.Api.Common.Validation;
 using Forum.Api.Data;
 using Forum.Api.Features.Auth;
+using Forum.Api.Features.Threads;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -60,6 +61,7 @@ builder.Services.AddOpenApi();
 
 // --- Feature slices ---
 builder.Services.AddAuthFeature();
+builder.Services.AddThreadsFeature();
 
 var app = builder.Build();
 

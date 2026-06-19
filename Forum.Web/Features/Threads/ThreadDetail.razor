@@ -1,0 +1,98 @@
+@* Forum.Web/Features/Threads/ThreadDetail.razor *@
+@page "/threads/{Id:int}"
+@inject IThreadApiClient ThreadApi
+@inject NavigationManager Navigation
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>@(_thread?.Title ?? "Thread")</PageTitle>
+
+@if (_loading)
+{
+    <p>Loading…</p>
+}
+else if (_error is not null)
+{
+    <p class="auth-error" role="alert">@_error</p>
+    <a class="btn btn-link-dark" href="/threads">Back to threads</a>
+}
+else if (_thread is not null)
+{
+    <article class="thread-detail">
+        <h1>@_thread.Title</h1>
+        <div class="thread-meta">
+            by <strong>@_thread.AuthorUserName</strong>
+            · @_thread.CreatedAtUtc.ToLocalTime().ToString("g")
+            @if (_thread.UpdatedAtUtc > _thread.CreatedAtUtc)
+            {
+                <span> · edited @_thread.UpdatedAtUtc.ToLocalTime().ToString("g")</span>
+            }
+        </div>
+
+        <div class="thread-body">@_thread.Body</div>
+
+        @if (_isOwner)
+        {
+            <div class="form-actions">
+                <a class="btn btn-primary btn-inline" href="@($"/threads/{Id}/edit")">Edit</a>
+                <button class="btn btn-danger" @onclick="DeleteAsync" disabled="@_deleting">
+                    @(_deleting ? "Deleting…" : "Delete")
+                </button>
+            </div>
+            @if (_actionError is not null)
+            {
+                <p class="auth-error" role="alert">@_actionError</p>
+            }
+        }
+    </article>
+    <a class="btn btn-link-dark" href="/threads">← Back to threads</a>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private ThreadDetailResponse? _thread;
+    private bool _loading = true;
+    private bool _isOwner;
+    private bool _deleting;
+    private string? _error;
+    private string? _actionError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var outcome = await ThreadApi.GetByIdAsync(Id);
+        if (outcome.Succeeded)
+        {
+            _thread = outcome.Data;
+            _isOwner = await CurrentUserIdAsync() == _thread!.AuthorId;
+        }
+        else
+        {
+            _error = outcome.Error;
+        }
+        _loading = false;
+    }
+
+    private async Task DeleteAsync()
+    {
+        _deleting = true;
+        _actionError = null;
+
+        var outcome = await ThreadApi.DeleteAsync(Id);
+        if (outcome.Succeeded)
+            Navigation.NavigateTo("/threads");
+        else
+        {
+            _actionError = outcome.Error;
+            _deleting = false;
+        }
+    }
+
+    private async Task<int?> CurrentUserIdAsync()
+    {
+        if (AuthState is null) return null;
+        var user = (await AuthState).User;
+        var raw = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(raw, out var id) ? id : null;
+    }
+}
