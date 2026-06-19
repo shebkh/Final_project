@@ -2,6 +2,7 @@
 using Blazored.LocalStorage;
 using Forum.Web.Components;
 using Forum.Web.Features.Auth;
+using Forum.Web.Features.Posts;
 using Forum.Web.Features.Threads;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,9 @@ builder.Services.AddAuthFeature(builder.Configuration);
 
 // Threads feature slice (typed HttpClient; reuses AuthTokenHandler from Auth).
 builder.Services.AddThreadsFeature(builder.Configuration);
+
+// Posts feature slice (typed HttpClient; reuses AuthTokenHandler from Auth).
+builder.Services.AddPostsFeature(builder.Configuration);
 
 var app = builder.Build();
 

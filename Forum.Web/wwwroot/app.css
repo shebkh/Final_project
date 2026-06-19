@@ -273,3 +273,80 @@ body {
 .btn-link-dark:hover {
     text-decoration: underline;
 }
+
+/* --- Posts / replies --- */
+.post-section {
+    margin: 1.5rem 0;
+}
+
+.post-heading {
+    font-size: 1.2rem;
+    border-bottom: 1px solid #d0d7de;
+    padding-bottom: 0.5rem;
+}
+
+.post-empty {
+    color: #57606a;
+}
+
+.post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.post-card {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    padding: 0.85rem 1.1rem;
+}
+
+.post-body {
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+.post-meta {
+    color: #57606a;
+    font-size: 0.85rem;
+    margin-top: 0.4rem;
+}
+
+.post-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.btn-link-danger {
+    background: none;
+    border: none;
+    color: #cf222e;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    cursor: pointer;
+}
+
+.btn-link-danger:hover {
+    text-decoration: underline;
+}
+
+.btn-link-danger:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.post-add {
+    background: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.post-signin {
+    color: #57606a;
+}

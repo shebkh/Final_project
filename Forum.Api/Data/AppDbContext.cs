@@ -1,5 +1,6 @@
 // Forum.Api/Data/AppDbContext.cs
 using Forum.Api.Features.Auth;
+using Forum.Api.Features.Posts;
 using Forum.Api.Features.Threads;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<ForumThread> Threads => Set<ForumThread>();
+    public DbSet<Post> Posts => Set<Post>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,6 +62,34 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             // Listing is ordered newest-first, so index the creation timestamp.
             entity.HasIndex(t => t.CreatedAtUtc);
+        });
+
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.ToTable("Posts");
+            entity.HasKey(p => p.Id);
+
+            entity.Property(p => p.Body)
+                .IsRequired()
+                .HasMaxLength(10_000);
+
+            // A post belongs to one thread. Restrict (not Cascade) keeps SQL Server
+            // from creating multiple cascade paths (User → Threads → Posts and
+            // User → Posts) and preserves history; the service deletes posts explicitly.
+            entity.HasOne(p => p.Thread)
+                .WithMany()
+                .HasForeignKey(p => p.ThreadId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // A post belongs to one author; blocked from deleting a user who still
+            // owns posts, mirroring the Threads → User relationship.
+            entity.HasOne(p => p.Author)
+                .WithMany()
+                .HasForeignKey(p => p.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Replies are listed oldest-first within a thread; index the FK + timestamp.
+            entity.HasIndex(p => new { p.ThreadId, p.CreatedAtUtc });
         });
     }
 }

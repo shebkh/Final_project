@@ -1,0 +1,87 @@
+@* Forum.Web/Features/Posts/PostList.razor *@
+@* Renders the replies for a thread and (when signed in) an add-reply form. *@
+@* Embedded in ThreadDetail; not a routable page, so no @page/@rendermode here —
+   it inherits the parent page's interactive, non-prerendered render mode. *@
+
+<section class="post-section">
+    <h2 class="post-heading">Replies@(_count > 0 ? $" ({_count})" : "")</h2>
+
+    @if (_loading)
+    {
+        <p>Loading replies…</p>
+    }
+    else if (_loadError is not null)
+    {
+        <p class="auth-error" role="alert">@_loadError</p>
+    }
+    else
+    {
+        @if (_posts.Count == 0)
+        {
+            <p class="post-empty">No replies yet.</p>
+        }
+        else
+        {
+            <ul class="post-list">
+                @foreach (var post in _posts)
+                {
+                    <li class="post-card" @key="post.Id">
+                        @if (_editingId == post.Id)
+                        {
+                            <PostForm Model="_editModel"
+                                      OnSubmit="SaveEditAsync"
+                                      OnCancel="CancelEdit"
+                                      SubmitLabel="Save"
+                                      FormName="@($"edit-{post.Id}")"
+                                      Busy="IsRowBusy(post.Id)"
+                                      Error="_editError" />
+                        }
+                        else
+                        {
+                            <div class="post-body">@post.Body</div>
+                            <div class="post-meta">
+                                by <strong>@post.AuthorUserName</strong>
+                                · @post.CreatedAtUtc.ToLocalTime().ToString("g")
+                                @if (post.UpdatedAtUtc > post.CreatedAtUtc)
+                                {
+                                    <span> · edited</span>
+                                }
+                            </div>
+                            @if (post.AuthorId == _currentUserId)
+                            {
+                                <div class="post-actions">
+                                    <button class="btn btn-link-dark" @onclick="() => BeginEdit(post)"
+                                            disabled="@IsRowBusy(post.Id)">Edit</button>
+                                    <button class="btn btn-link-danger" @onclick="() => DeleteAsync(post.Id)"
+                                            disabled="@IsRowBusy(post.Id)">Delete</button>
+                                </div>
+                            }
+                        }
+                    </li>
+                }
+            </ul>
+        }
+
+        @if (_actionError is not null)
+        {
+            <p class="auth-error" role="alert">@_actionError</p>
+        }
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="post-add">
+                    <PostForm Model="_newModel"
+                              OnSubmit="AddReplyAsync"
+                              SubmitLabel="Post reply"
+                              Label="Add a reply"
+                              FormName="add-reply"
+                              Busy="_addBusy"
+                              Error="_addError" />
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <p class="post-signin"><a href="/login">Sign in</a> to reply.</p>
+            </NotAuthorized>
+        </AuthorizeView>
+    }
+</section>
