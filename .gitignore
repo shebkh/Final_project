@@ -53,3 +53,6 @@ desktop.ini
 *.env
 appsettings.*.local.json
 secrets.json
+
+# Local-only planning/handoff doc (kept on disk, never committed)
+PROGRESS.md
