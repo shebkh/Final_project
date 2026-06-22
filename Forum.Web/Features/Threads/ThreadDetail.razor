@@ -20,7 +20,7 @@ else if (_thread is not null)
     <article class="thread-detail">
         <h1>@_thread.Title</h1>
         <div class="thread-meta">
-            by <strong>@_thread.AuthorUserName</strong>
+            by <a class="author-link" href="@($"/users/{_thread.AuthorId}")">@_thread.AuthorUserName</a>
             · @_thread.CreatedAtUtc.ToLocalTime().ToString("g")
             @if (_thread.UpdatedAtUtc > _thread.CreatedAtUtc)
             {

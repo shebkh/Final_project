@@ -3,6 +3,7 @@ using Blazored.LocalStorage;
 using Forum.Web.Components;
 using Forum.Web.Features.Auth;
 using Forum.Web.Features.Posts;
+using Forum.Web.Features.Profiles;
 using Forum.Web.Features.Threads;
 using Forum.Web.Features.Votes;
 
@@ -30,6 +31,9 @@ builder.Services.AddPostsFeature(builder.Configuration);
 
 // Votes feature slice (typed HttpClient; reuses AuthTokenHandler from Auth).
 builder.Services.AddVotesFeature(builder.Configuration);
+
+// Profiles feature slice (typed HttpClient; public reads).
+builder.Services.AddProfilesFeature(builder.Configuration);
 
 var app = builder.Build();
 

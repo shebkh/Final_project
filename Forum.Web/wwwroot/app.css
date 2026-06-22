@@ -415,3 +415,64 @@ body {
     font-weight: 700;
     cursor: help;
 }
+
+/* --- User profiles --- */
+.author-link {
+    color: #0969da;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.author-link:hover {
+    text-decoration: underline;
+}
+
+.profile-detail {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.profile-name {
+    margin: 0;
+}
+
+.profile-meta {
+    color: #57606a;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.profile-tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid #d0d7de;
+    margin: 1.25rem 0 1rem;
+}
+
+.profile-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    color: #57606a;
+    cursor: pointer;
+    width: auto;
+}
+
+.profile-tab:hover {
+    color: #1f2328;
+}
+
+.profile-tab.active {
+    color: #1f2328;
+    font-weight: 600;
+    border-bottom-color: #fd8c73;
+}
+
+.profile-section {
+    margin-top: 0.5rem;
+}

@@ -1,0 +1,113 @@
+@* Forum.Web/Features/Profiles/UserProfile.razor *@
+@page "/users/{Id:int}"
+@* Public, anonymous read with no per-user/ownership data, so the default
+   interactive render mode is appropriate (no prerender:false needed). *@
+
+<PageTitle>@(_profile?.UserName ?? "Profile")</PageTitle>
+
+@if (_loading)
+{
+    <p>Loading profile…</p>
+}
+else if (_error is not null)
+{
+    <p class="auth-error" role="alert">@_error</p>
+    <a class="btn btn-link-dark" href="/threads">Back to threads</a>
+}
+else if (_profile is not null)
+{
+    <article class="profile-detail">
+        <h1 class="profile-name">@_profile.UserName</h1>
+        <div class="profile-meta">
+            joined @_profile.JoinedAtUtc.ToLocalTime().ToString("d")
+            · @_profile.ThreadCount thread@(_profile.ThreadCount == 1 ? "" : "s")
+            · @_profile.PostCount repl@(_profile.PostCount == 1 ? "y" : "ies")
+        </div>
+
+        <div class="profile-tabs" role="tablist">
+            <button class="profile-tab @(_tab == ProfileTab.Threads ? "active" : "")"
+                    role="tab" @onclick="() => ShowTab(ProfileTab.Threads)">
+                Threads (@_profile.ThreadCount)
+            </button>
+            <button class="profile-tab @(_tab == ProfileTab.Posts ? "active" : "")"
+                    role="tab" @onclick="() => ShowTab(ProfileTab.Posts)">
+                Replies (@_profile.PostCount)
+            </button>
+        </div>
+
+        @if (_tab == ProfileTab.Threads)
+        {
+            <section class="profile-section">
+                @if (_threadsLoading)
+                {
+                    <p>Loading threads…</p>
+                }
+                else if (_threadsError is not null)
+                {
+                    <p class="auth-error" role="alert">@_threadsError</p>
+                }
+                else if (_threads.Count == 0)
+                {
+                    <p>@_profile.UserName hasn't started any threads yet.</p>
+                }
+                else
+                {
+                    <ul class="thread-list">
+                        @foreach (var thread in _threads)
+                        {
+                            <li class="thread-card" @key="thread.Id">
+                                <a class="thread-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
+                                <p class="thread-excerpt">@thread.Excerpt</p>
+                                <div class="thread-meta">
+                                    @thread.CreatedAtUtc.ToLocalTime().ToString("g")
+                                    @if (thread.UpdatedAtUtc > thread.CreatedAtUtc)
+                                    {
+                                        <span> · edited</span>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        }
+        else
+        {
+            <section class="profile-section">
+                @if (_postsLoading)
+                {
+                    <p>Loading replies…</p>
+                }
+                else if (_postsError is not null)
+                {
+                    <p class="auth-error" role="alert">@_postsError</p>
+                }
+                else if (_posts.Count == 0)
+                {
+                    <p>@_profile.UserName hasn't posted any replies yet.</p>
+                }
+                else
+                {
+                    <ul class="thread-list">
+                        @foreach (var post in _posts)
+                        {
+                            <li class="thread-card" @key="post.Id">
+                                <a class="thread-title" href="@($"/threads/{post.ThreadId}")">@post.ThreadTitle</a>
+                                <p class="thread-excerpt">@post.Excerpt</p>
+                                <div class="thread-meta">
+                                    @post.CreatedAtUtc.ToLocalTime().ToString("g")
+                                    @if (post.UpdatedAtUtc > post.CreatedAtUtc)
+                                    {
+                                        <span> · edited</span>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        }
+    </article>
+
+    <a class="btn btn-link-dark" href="/threads">← Back to threads</a>
+}

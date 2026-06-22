@@ -35,7 +35,7 @@ else
                 <a class="thread-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
                 <p class="thread-excerpt">@thread.Excerpt</p>
                 <div class="thread-meta">
-                    by <strong>@thread.AuthorUserName</strong>
+                    by <a class="author-link" href="@($"/users/{thread.AuthorId}")">@thread.AuthorUserName</a>
                     · @thread.CreatedAtUtc.ToLocalTime().ToString("g")
                 </div>
             </li>
