@@ -2,6 +2,7 @@
 using Forum.Api.Features.Auth;
 using Forum.Api.Features.Posts;
 using Forum.Api.Features.Threads;
+using Forum.Api.Features.Votes;
 using Microsoft.EntityFrameworkCore;
 
 namespace Forum.Api.Data;
@@ -15,6 +16,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users => Set<User>();
     public DbSet<ForumThread> Threads => Set<ForumThread>();
     public DbSet<Post> Posts => Set<Post>();
+    public DbSet<ThreadVote> ThreadVotes => Set<ThreadVote>();
+    public DbSet<PostVote> PostVotes => Set<PostVote>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -90,6 +93,44 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             // Replies are listed oldest-first within a thread; index the FK + timestamp.
             entity.HasIndex(p => new { p.ThreadId, p.CreatedAtUtc });
+        });
+
+        modelBuilder.Entity<ThreadVote>(entity =>
+        {
+            entity.ToTable("ThreadVotes");
+            entity.HasKey(v => v.Id);
+
+            entity.HasOne(v => v.Thread)
+                .WithMany()
+                .HasForeignKey(v => v.ThreadId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(v => v.User)
+                .WithMany()
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // One vote per user per thread.
+            entity.HasIndex(v => new { v.ThreadId, v.UserId }).IsUnique();
+        });
+
+        modelBuilder.Entity<PostVote>(entity =>
+        {
+            entity.ToTable("PostVotes");
+            entity.HasKey(v => v.Id);
+
+            entity.HasOne(v => v.Post)
+                .WithMany()
+                .HasForeignKey(v => v.PostId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(v => v.User)
+                .WithMany()
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // One vote per user per post.
+            entity.HasIndex(v => new { v.PostId, v.UserId }).IsUnique();
         });
     }
 }

@@ -4,6 +4,7 @@ using Forum.Web.Components;
 using Forum.Web.Features.Auth;
 using Forum.Web.Features.Posts;
 using Forum.Web.Features.Threads;
+using Forum.Web.Features.Votes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,9 @@ builder.Services.AddThreadsFeature(builder.Configuration);
 
 // Posts feature slice (typed HttpClient; reuses AuthTokenHandler from Auth).
 builder.Services.AddPostsFeature(builder.Configuration);
+
+// Votes feature slice (typed HttpClient; reuses AuthTokenHandler from Auth).
+builder.Services.AddVotesFeature(builder.Configuration);
 
 var app = builder.Build();
 

@@ -5,6 +5,7 @@ using Forum.Api.Data;
 using Forum.Api.Features.Auth;
 using Forum.Api.Features.Posts;
 using Forum.Api.Features.Threads;
+using Forum.Api.Features.Votes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -64,6 +65,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddAuthFeature();
 builder.Services.AddThreadsFeature();
 builder.Services.AddPostsFeature();
+builder.Services.AddVotesFeature();
 
 var app = builder.Build();
 

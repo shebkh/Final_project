@@ -1,0 +1,28 @@
+@* Forum.Web/Features/Votes/VoteBox.razor *@
+@* Up/down vote control with score. Reusable for threads and posts. *@
+@* Embedded in host pages (ThreadDetail, PostList); not routable, so no @page/@rendermode —
+   inherits the host page's interactive, non-prerendered render mode. *@
+
+<div class="vote-box">
+    <AuthorizeView>
+        <Authorized>
+            <button class="vote-btn @(_tally?.MyVote == 1 ? "vote-active-up" : "")"
+                    title="Up-vote" disabled="@_busy"
+                    @onclick="() => CastAsync(1)">▲</button>
+            <span class="vote-score @ScoreClass">@(_tally?.Score ?? 0)</span>
+            <button class="vote-btn @(_tally?.MyVote == -1 ? "vote-active-down" : "")"
+                    title="Down-vote" disabled="@_busy"
+                    @onclick="() => CastAsync(-1)">▼</button>
+        </Authorized>
+        <NotAuthorized>
+            <span class="vote-btn vote-btn-readonly" title="Sign in to vote">▲</span>
+            <span class="vote-score @ScoreClass">@(_tally?.Score ?? 0)</span>
+            <span class="vote-btn vote-btn-readonly" title="Sign in to vote">▼</span>
+        </NotAuthorized>
+    </AuthorizeView>
+
+    @if (_error is not null)
+    {
+        <span class="vote-error" role="alert" title="@_error">!</span>
+    }
+</div>

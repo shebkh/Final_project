@@ -350,3 +350,68 @@ body {
 .post-signin {
     color: #57606a;
 }
+
+/* --- Vote box --- */
+.vote-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.5rem 0;
+}
+
+.vote-btn {
+    background: none;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    color: #57606a;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0.2rem 0.45rem;
+}
+
+.vote-btn:hover:not(:disabled) {
+    border-color: #0969da;
+    color: #0969da;
+}
+
+.vote-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.vote-btn-readonly {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.vote-active-up {
+    border-color: #1a7f37;
+    color: #1a7f37;
+}
+
+.vote-active-down {
+    border-color: #cf222e;
+    color: #cf222e;
+}
+
+.vote-score {
+    min-width: 1.5rem;
+    text-align: center;
+    font-weight: 600;
+    color: #1f2328;
+}
+
+.vote-score-pos {
+    color: #1a7f37;
+}
+
+.vote-score-neg {
+    color: #cf222e;
+}
+
+.vote-error {
+    color: #cf222e;
+    font-weight: 700;
+    cursor: help;
+}

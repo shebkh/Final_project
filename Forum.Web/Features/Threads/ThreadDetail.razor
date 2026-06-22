@@ -30,6 +30,8 @@ else if (_thread is not null)
 
         <div class="thread-body">@_thread.Body</div>
 
+        <VoteBox Kind="VoteTargetKind.Thread" TargetId="Id" />
+
         @if (_isOwner)
         {
             <div class="form-actions">
