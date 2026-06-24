@@ -41,4 +41,11 @@ public interface IVoteRepository
 
     /// <summary>Persists pending changes to a tracked vote returned by GetThreadVoteAsync/GetPostVoteAsync.</summary>
     Task SaveChangesAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Stops tracking an entity so a subsequent insert of the same (target, user) is not
+    /// blocked by leftover tracked state. Used when an update lost a concurrency race and
+    /// the service falls back to a fresh insert.
+    /// </summary>
+    void Detach(object entity);
 }

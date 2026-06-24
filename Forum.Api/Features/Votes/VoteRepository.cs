@@ -36,7 +36,17 @@ public sealed class VoteRepository(AppDbContext db) : IVoteRepository
     public async Task RemoveThreadVoteAsync(ThreadVote vote, CancellationToken ct = default)
     {
         db.ThreadVotes.Remove(vote);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // A concurrent request already deleted (or changed) this row, so the
+            // DELETE affected 0 rows. The desired end-state — the caller's vote is
+            // gone — is already true, so treat it as success instead of a 500.
+            db.Entry(vote).State = EntityState.Detached;
+        }
     }
 
     public Task<VoteCounts> CountThreadVotesAsync(int threadId, CancellationToken ct = default) =>
@@ -68,7 +78,17 @@ public sealed class VoteRepository(AppDbContext db) : IVoteRepository
     public async Task RemovePostVoteAsync(PostVote vote, CancellationToken ct = default)
     {
         db.PostVotes.Remove(vote);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // A concurrent request already deleted (or changed) this row, so the
+            // DELETE affected 0 rows. The desired end-state — the caller's vote is
+            // gone — is already true, so treat it as success instead of a 500.
+            db.Entry(vote).State = EntityState.Detached;
+        }
     }
 
     public Task<VoteCounts> CountPostVotesAsync(int postId, CancellationToken ct = default) =>
@@ -76,6 +96,9 @@ public sealed class VoteRepository(AppDbContext db) : IVoteRepository
 
     public Task SaveChangesAsync(CancellationToken ct = default) =>
         db.SaveChangesAsync(ct);
+
+    public void Detach(object entity) =>
+        db.Entry(entity).State = EntityState.Detached;
 
     // Counts up/down in a single grouped round-trip rather than two COUNT queries.
     private static async Task<VoteCounts> AggregateAsync(IQueryable<short> values, CancellationToken ct)

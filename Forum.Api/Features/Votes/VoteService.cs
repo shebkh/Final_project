@@ -1,4 +1,6 @@
 // Forum.Api/Features/Votes/VoteService.cs
+using Microsoft.EntityFrameworkCore;
+
 namespace Forum.Api.Features.Votes;
 
 /// <summary>
@@ -79,14 +81,33 @@ public sealed class VoteService(IVoteRepository repository) : IVoteService
 
         if (existing.Value == value)
         {
-            // Same value again → toggle the vote off.
+            // Same value again → toggle the vote off. RemoveThreadVoteAsync absorbs a
+            // concurrent delete (0 rows affected) and still reports the end-state: gone.
             await repository.RemoveThreadVoteAsync(existing, ct);
             return 0;
         }
 
         existing.Value = value;
         existing.UpdatedAtUtc = now;
-        await repository.SaveChangesAsync(ct);
+        try
+        {
+            await repository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // A concurrent request deleted this vote between our read and the UPDATE,
+            // so it affected 0 rows. The caller still wants a vote of `value`, so
+            // re-insert it (race-safe via TryAdd) rather than failing with a 500.
+            repository.Detach(existing);
+            await repository.TryAddThreadVoteAsync(new ThreadVote
+            {
+                ThreadId = threadId,
+                UserId = userId,
+                Value = value,
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now
+            }, ct);
+        }
         return value;
     }
 
@@ -166,7 +187,25 @@ public sealed class VoteService(IVoteRepository repository) : IVoteService
 
         existing.Value = value;
         existing.UpdatedAtUtc = now;
-        await repository.SaveChangesAsync(ct);
+        try
+        {
+            await repository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // A concurrent request deleted this vote between our read and the UPDATE,
+            // so it affected 0 rows. The caller still wants a vote of `value`, so
+            // re-insert it (race-safe via TryAdd) rather than failing with a 500.
+            repository.Detach(existing);
+            await repository.TryAddPostVoteAsync(new PostVote
+            {
+                PostId = postId,
+                UserId = userId,
+                Value = value,
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now
+            }, ct);
+        }
         return value;
     }
 
