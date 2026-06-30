@@ -18,13 +18,15 @@ public sealed class ProfileService(IProfileRepository repository) : IProfileServ
 
         var threadCount = await repository.CountThreadsByAuthorAsync(userId, ct);
         var postCount = await repository.CountPostsByAuthorAsync(userId, ct);
+        var reputation = await repository.GetReputationAsync(userId, ct);
 
         var profile = new UserProfileResponse(
             user.Id,
             user.UserName,
             user.CreatedAtUtc,
             threadCount,
-            postCount);
+            postCount,
+            reputation);
 
         return ProfileResult<UserProfileResponse>.Success(profile);
     }

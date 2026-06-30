@@ -477,6 +477,34 @@ body {
     margin-top: 0.5rem;
 }
 
+.profile-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
+.profile-rep {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2328;
+}
+
+.profile-rep-pos {
+    color: #1a7f37;
+}
+
+.profile-rep-neg {
+    color: #cf222e;
+}
+
+.profile-rep-label {
+    font-size: 0.85rem;
+    color: #57606a;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
 /* --- Moderation --- */
 .badge {
     display: inline-block;

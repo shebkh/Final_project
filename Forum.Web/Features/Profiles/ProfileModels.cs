@@ -8,7 +8,8 @@ public record UserProfileResponse(
     string UserName,
     DateTime JoinedAtUtc,
     int ThreadCount,
-    int PostCount);
+    int PostCount,
+    int Reputation);
 
 public record ProfileThreadResponse(
     int Id,

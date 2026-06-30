@@ -17,6 +17,13 @@ public partial class UserProfile : ComponentBase
 
     private ProfileTab _tab = ProfileTab.Threads;
 
+    private string RepClass => (_profile?.Reputation ?? 0) switch
+    {
+        > 0 => "profile-rep-pos",
+        < 0 => "profile-rep-neg",
+        _ => string.Empty
+    };
+
     private IReadOnlyList<ProfileThreadResponse> _threads = [];
     private bool _threadsLoading;
     private bool _threadsLoaded;

@@ -7,7 +7,8 @@ public record UserProfileResponse(
     string UserName,
     DateTime JoinedAtUtc,
     int ThreadCount,
-    int PostCount);
+    int PostCount,
+    int Reputation);
 
 /// <summary>One thread in a user's authored-thread history.</summary>
 public record ProfileThreadResponse(

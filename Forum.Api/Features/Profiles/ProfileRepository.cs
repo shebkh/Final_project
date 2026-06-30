@@ -23,6 +23,22 @@ public sealed class ProfileRepository(AppDbContext db) : IProfileRepository
     public Task<int> CountPostsByAuthorAsync(int userId, CancellationToken ct = default) =>
         db.Posts.CountAsync(p => p.AuthorId == userId, ct);
 
+    public async Task<int> GetReputationAsync(int userId, CancellationToken ct = default)
+    {
+        // Votes cast on threads this user authored. Sum over an empty set is NULL in SQL,
+        // so project to int? and coalesce to 0.
+        var threadRep = await db.ThreadVotes
+            .Where(v => db.Threads.Any(t => t.Id == v.ThreadId && t.AuthorId == userId))
+            .SumAsync(v => (int?)v.Value, ct) ?? 0;
+
+        // Votes cast on posts this user authored.
+        var postRep = await db.PostVotes
+            .Where(v => db.Posts.Any(p => p.Id == v.PostId && p.AuthorId == userId))
+            .SumAsync(v => (int?)v.Value, ct) ?? 0;
+
+        return threadRep + postRep;
+    }
+
     public async Task<IReadOnlyList<ForumThread>> ListThreadsByAuthorAsync(
         int userId, int skip, int take, CancellationToken ct = default) =>
         await db.Threads

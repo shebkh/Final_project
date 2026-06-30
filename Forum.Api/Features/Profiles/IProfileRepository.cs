@@ -19,6 +19,12 @@ public interface IProfileRepository
     /// <summary>Count of posts authored by the user.</summary>
     Task<int> CountPostsByAuthorAsync(int userId, CancellationToken ct = default);
 
+    /// <summary>
+    /// The user's reputation: the summed vote value (+1 up / -1 down) across every vote cast
+    /// on threads AND posts the user authored. Zero when they have no voted-on content.
+    /// </summary>
+    Task<int> GetReputationAsync(int userId, CancellationToken ct = default);
+
     /// <summary>Newest-first page of the user's authored threads, read-only.</summary>
     Task<IReadOnlyList<ForumThread>> ListThreadsByAuthorAsync(
         int userId, int skip, int take, CancellationToken ct = default);

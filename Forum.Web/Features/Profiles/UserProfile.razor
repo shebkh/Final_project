@@ -18,6 +18,12 @@ else if (_profile is not null)
 {
     <article class="profile-detail">
         <h1 class="profile-name">@_profile.UserName</h1>
+        <div class="profile-stats">
+            <span class="profile-rep @RepClass" title="Reputation from votes on this user's threads and replies">
+                @_profile.Reputation
+            </span>
+            <span class="profile-rep-label">reputation</span>
+        </div>
         <div class="profile-meta">
             joined @_profile.JoinedAtUtc.ToLocalTime().ToString("d")
             · @_profile.ThreadCount thread@(_profile.ThreadCount == 1 ? "" : "s")
