@@ -1,5 +1,6 @@
 // Forum.Api/Features/Threads/ThreadsController.cs
 using System.Security.Claims;
+using Forum.Api.Features.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -72,7 +73,7 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var result = await threadService.DeleteAsync(id, userId, ct);
+        var result = await threadService.DeleteAsync(id, userId, IsModerator(), ct);
         return result.Error switch
         {
             ThreadError.None => NoContent(),
@@ -96,4 +97,7 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return int.TryParse(raw, out userId);
     }
+
+    /// <summary>True if the caller carries the moderator role claim.</summary>
+    private bool IsModerator() => User.IsInRole(ModeratorRole.Name);
 }

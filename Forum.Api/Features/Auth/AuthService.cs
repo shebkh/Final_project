@@ -45,6 +45,6 @@ public sealed class AuthService(
     private AuthResponse BuildResponse(User user)
     {
         var (token, expiresAtUtc) = tokenService.CreateToken(user);
-        return new AuthResponse(token, expiresAtUtc, user.Id, user.UserName, user.Email);
+        return new AuthResponse(token, expiresAtUtc, user.Id, user.UserName, user.Email, user.IsModerator);
     }
 }

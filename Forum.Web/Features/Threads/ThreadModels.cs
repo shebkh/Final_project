@@ -26,7 +26,9 @@ public record ThreadSummaryResponse(
     int AuthorId,
     string AuthorUserName,
     DateTime CreatedAtUtc,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    bool IsPinned,
+    bool IsLocked);
 
 public record ThreadDetailResponse(
     int Id,
@@ -35,7 +37,9 @@ public record ThreadDetailResponse(
     int AuthorId,
     string AuthorUserName,
     DateTime CreatedAtUtc,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    bool IsPinned,
+    bool IsLocked);
 
 /// <summary>Result wrapper so components handle failures without exceptions.</summary>
 public record ThreadOutcome<T>(bool Succeeded, T? Data, string? Error) where T : class

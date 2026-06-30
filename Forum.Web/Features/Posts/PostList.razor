@@ -48,13 +48,19 @@
                                 }
                             </div>
                             <VoteBox Kind="VoteTargetKind.Post" TargetId="post.Id" />
-                            @if (post.AuthorId == _currentUserId)
+                            @if (CanEdit(post) || CanDelete(post))
                             {
                                 <div class="post-actions">
-                                    <button class="btn btn-link-dark" @onclick="() => BeginEdit(post)"
-                                            disabled="@IsRowBusy(post.Id)">Edit</button>
-                                    <button class="btn btn-link-danger" @onclick="() => DeleteAsync(post.Id)"
-                                            disabled="@IsRowBusy(post.Id)">Delete</button>
+                                    @if (CanEdit(post) && !Locked)
+                                    {
+                                        <button class="btn btn-link-dark" @onclick="() => BeginEdit(post)"
+                                                disabled="@IsRowBusy(post.Id)">Edit</button>
+                                    }
+                                    @if (CanDelete(post))
+                                    {
+                                        <button class="btn btn-link-danger" @onclick="() => DeleteAsync(post.Id)"
+                                                disabled="@IsRowBusy(post.Id)">Delete</button>
+                                    }
                                 </div>
                             }
                         }
@@ -68,21 +74,28 @@
             <p class="auth-error" role="alert">@_actionError</p>
         }
 
-        <AuthorizeView>
-            <Authorized>
-                <div class="post-add">
-                    <PostForm Model="_newModel"
-                              OnSubmit="AddReplyAsync"
-                              SubmitLabel="Post reply"
-                              Label="Add a reply"
-                              FormName="add-reply"
-                              Busy="_addBusy"
-                              Error="_addError" />
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <p class="post-signin"><a href="/login">Sign in</a> to reply.</p>
-            </NotAuthorized>
-        </AuthorizeView>
+        @if (Locked)
+        {
+            <p class="post-locked" role="status">🔒 This thread is locked. New replies are disabled.</p>
+        }
+        else
+        {
+            <AuthorizeView>
+                <Authorized>
+                    <div class="post-add">
+                        <PostForm Model="_newModel"
+                                  OnSubmit="AddReplyAsync"
+                                  SubmitLabel="Post reply"
+                                  Label="Add a reply"
+                                  FormName="add-reply"
+                                  Busy="_addBusy"
+                                  Error="_addError" />
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <p class="post-signin"><a href="/login">Sign in</a> to reply.</p>
+                </NotAuthorized>
+            </AuthorizeView>
+        }
     }
 </section>

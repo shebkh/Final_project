@@ -8,6 +8,7 @@ namespace Forum.Web.Features.Posts;
 public partial class PostList : ComponentBase
 {
     [Parameter, EditorRequired] public int ThreadId { get; set; }
+    [Parameter] public bool Locked { get; set; }
     [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
 
     [Inject] private IPostApiClient PostApi { get; set; } = default!;
@@ -18,6 +19,7 @@ public partial class PostList : ComponentBase
 
     private int _count;
     private int? _currentUserId;
+    private bool _isModerator;
     private int? _editingId;
     // Row-scoped busy: the id of the post whose edit/delete is in flight (null = none).
     private int? _busyPostId;
@@ -30,7 +32,13 @@ public partial class PostList : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        _currentUserId = await CurrentUserIdAsync();
+        if (AuthState is not null)
+        {
+            var user = (await AuthState).User;
+            var raw = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            _currentUserId = int.TryParse(raw, out var id) ? id : null;
+            _isModerator = user.IsInRole("Moderator");
+        }
         await LoadAsync();
     }
 
@@ -127,11 +135,7 @@ public partial class PostList : ComponentBase
 
     private bool IsRowBusy(int postId) => _busyPostId == postId;
 
-    private async Task<int?> CurrentUserIdAsync()
-    {
-        if (AuthState is null) return null;
-        var user = (await AuthState).User;
-        var raw = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return int.TryParse(raw, out var id) ? id : null;
-    }
+    /// <summary>The author may edit/delete their own reply; a moderator may delete any reply.</summary>
+    private bool CanEdit(PostResponse post) => post.AuthorId == _currentUserId;
+    private bool CanDelete(PostResponse post) => post.AuthorId == _currentUserId || _isModerator;
 }

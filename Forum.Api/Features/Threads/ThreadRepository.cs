@@ -10,7 +10,8 @@ public sealed class ThreadRepository(AppDbContext db) : IThreadRepository
         await db.Threads
             .AsNoTracking()
             .Include(t => t.Author)
-            .OrderByDescending(t => t.CreatedAtUtc)
+            .OrderByDescending(t => t.IsPinned)   // pinned threads first
+            .ThenByDescending(t => t.CreatedAtUtc)
             .ThenByDescending(t => t.Id)
             .Skip(skip)
             .Take(take)

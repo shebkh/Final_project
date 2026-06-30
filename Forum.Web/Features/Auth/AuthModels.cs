@@ -38,7 +38,8 @@ public record AuthResponse(
     DateTime ExpiresAtUtc,
     int UserId,
     string UserName,
-    string Email);
+    string Email,
+    bool IsModerator);
 
 /// <summary>Result wrapper returned to components so they can show errors without exceptions.</summary>
 public record AuthOutcome(bool Succeeded, AuthResponse? Data, string? Error)

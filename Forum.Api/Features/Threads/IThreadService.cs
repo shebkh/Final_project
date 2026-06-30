@@ -34,5 +34,6 @@ public interface IThreadService
     Task<ThreadResult<ThreadDetailResponse>> UpdateAsync(
         int id, UpdateThreadRequest request, int currentUserId, CancellationToken ct = default);
 
-    Task<ThreadResult<ThreadDetailResponse>> DeleteAsync(int id, int currentUserId, CancellationToken ct = default);
+    Task<ThreadResult<ThreadDetailResponse>> DeleteAsync(
+        int id, int currentUserId, bool isModerator, CancellationToken ct = default);
 }

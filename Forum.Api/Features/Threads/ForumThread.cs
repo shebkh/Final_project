@@ -16,6 +16,18 @@ public class ForumThread
 
     public required string Body { get; set; }
 
+    /// <summary>
+    /// Whether a moderator has pinned this thread. Pinned threads sort ahead of the rest
+    /// in the listing. Set only via the Moderation slice. Defaults to false.
+    /// </summary>
+    public bool IsPinned { get; set; }
+
+    /// <summary>
+    /// Whether a moderator has locked this thread. Locked threads reject new replies and
+    /// reply edits. Set only via the Moderation slice. Defaults to false.
+    /// </summary>
+    public bool IsLocked { get; set; }
+
     /// <summary>FK to the User who created the thread.</summary>
     public int AuthorId { get; set; }
 

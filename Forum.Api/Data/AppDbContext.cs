@@ -38,6 +38,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(u => u.PasswordHash)
                 .IsRequired();
 
+            // Moderator privilege flag; defaults to false for every new registration.
+            entity.Property(u => u.IsModerator)
+                .HasDefaultValue(false);
+
             // Usernames and emails must be unique across the platform.
             entity.HasIndex(u => u.UserName).IsUnique();
             entity.HasIndex(u => u.Email).IsUnique();
@@ -55,6 +59,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(t => t.Body)
                 .IsRequired()
                 .HasMaxLength(10_000);
+
+            // Moderation flags; default false. Pinned threads sort first (see index below).
+            entity.Property(t => t.IsPinned)
+                .HasDefaultValue(false);
+
+            entity.Property(t => t.IsLocked)
+                .HasDefaultValue(false);
 
             // A thread belongs to one author; deleting a user is blocked while
             // they still own threads (Restrict) to preserve discussion history.

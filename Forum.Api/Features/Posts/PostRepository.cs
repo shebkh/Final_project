@@ -9,6 +9,18 @@ public sealed class PostRepository(AppDbContext db) : IPostRepository
     public Task<bool> ThreadExistsAsync(int threadId, CancellationToken ct = default) =>
         db.Threads.AnyAsync(t => t.Id == threadId, ct);
 
+    public async Task<(bool Exists, bool IsLocked)> GetThreadLockStateAsync(
+        int threadId, CancellationToken ct = default)
+    {
+        var row = await db.Threads
+            .AsNoTracking()
+            .Where(t => t.Id == threadId)
+            .Select(t => new { t.IsLocked })
+            .FirstOrDefaultAsync(ct);
+
+        return row is null ? (false, false) : (true, row.IsLocked);
+    }
+
     public async Task<IReadOnlyList<Post>> ListByThreadAsync(
         int threadId, int skip, int take, CancellationToken ct = default) =>
         await db.Posts

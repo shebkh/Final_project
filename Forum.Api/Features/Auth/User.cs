@@ -16,5 +16,12 @@ public class User
     /// <summary>BCrypt hash of the user's password. Never returned to clients.</summary>
     public required string PasswordHash { get; set; }
 
+    /// <summary>
+    /// Whether this user has moderator privileges (pin/lock threads, delete any content).
+    /// Seeded manually in the database; a user must re-login after promotion so the new
+    /// claim is issued into their JWT. Defaults to false for all registrations.
+    /// </summary>
+    public bool IsModerator { get; set; }
+
     public DateTime CreatedAtUtc { get; set; }
 }

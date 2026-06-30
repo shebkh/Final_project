@@ -29,8 +29,11 @@ public sealed class PostService(IPostRepository repository) : IPostService
     public async Task<PostResult<PostResponse>> CreateAsync(
         int threadId, CreatePostRequest request, int authorId, CancellationToken ct = default)
     {
-        if (!await repository.ThreadExistsAsync(threadId, ct))
+        var (exists, isLocked) = await repository.GetThreadLockStateAsync(threadId, ct);
+        if (!exists)
             return PostResult<PostResponse>.Fail(PostError.ThreadNotFound);
+        if (isLocked)
+            return PostResult<PostResponse>.Fail(PostError.ThreadLocked);
 
         var now = DateTime.UtcNow;
         var post = new Post
@@ -50,15 +53,22 @@ public sealed class PostService(IPostRepository repository) : IPostService
     }
 
     public async Task<PostResult<PostResponse>> UpdateAsync(
-        int id, UpdatePostRequest request, int currentUserId, CancellationToken ct = default)
+        int id, UpdatePostRequest request, int currentUserId, bool isModerator, CancellationToken ct = default)
     {
         // Tracked, no-Include fetch: mutating + SaveChanges writes only the Posts row.
         var post = await repository.GetForUpdateAsync(id, ct);
         if (post is null)
             return PostResult<PostResponse>.Fail(PostError.NotFound);
 
-        if (post.AuthorId != currentUserId)
+        // Owner or moderator may edit. (Moderators editing others' replies is unusual but
+        // consistent with delete-any; the owner check is the primary gate.)
+        if (post.AuthorId != currentUserId && !isModerator)
             return PostResult<PostResponse>.Fail(PostError.Forbidden);
+
+        // A locked thread freezes its replies — no further edits until unlocked.
+        var (_, isLocked) = await repository.GetThreadLockStateAsync(post.ThreadId, ct);
+        if (isLocked)
+            return PostResult<PostResponse>.Fail(PostError.ThreadLocked);
 
         post.Body = request.Body.Trim();
         post.UpdatedAtUtc = DateTime.UtcNow;
@@ -70,14 +80,16 @@ public sealed class PostService(IPostRepository repository) : IPostService
     }
 
     public async Task<PostResult<PostResponse>> DeleteAsync(
-        int id, int currentUserId, CancellationToken ct = default)
+        int id, int currentUserId, bool isModerator, CancellationToken ct = default)
     {
         // Read-path fetch first so the snapshot includes the Author for the response.
         var snapshotSource = await repository.GetByIdAsync(id, ct);
         if (snapshotSource is null)
             return PostResult<PostResponse>.Fail(PostError.NotFound);
 
-        if (snapshotSource.AuthorId != currentUserId)
+        // Owner or moderator may delete. Moderators may delete on locked threads too —
+        // removing spam/abuse from a locked thread is a core moderation use case.
+        if (snapshotSource.AuthorId != currentUserId && !isModerator)
             return PostResult<PostResponse>.Fail(PostError.Forbidden);
 
         var snapshot = ToResponse(snapshotSource);

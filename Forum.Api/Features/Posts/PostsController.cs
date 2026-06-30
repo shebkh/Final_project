@@ -1,5 +1,6 @@
 // Forum.Api/Features/Posts/PostsController.cs
 using System.Security.Claims;
+using Forum.Api.Features.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,6 +43,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
             PostError.None when result.Value is not null =>
                 CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value),
             PostError.ThreadNotFound => NotFound(new { error = "Thread not found." }),
+            PostError.ThreadLocked => Conflict(new { error = "This thread is locked; new replies are disabled." }),
             _ => Problem("An unexpected error occurred.")
         };
     }
@@ -70,7 +72,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var result = await postService.UpdateAsync(id, request, userId, ct);
+        var result = await postService.UpdateAsync(id, request, userId, IsModerator(), ct);
         return MapResult(result);
     }
 
@@ -85,7 +87,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var result = await postService.DeleteAsync(id, userId, ct);
+        var result = await postService.DeleteAsync(id, userId, IsModerator(), ct);
         return result.Error switch
         {
             PostError.None => NoContent(),
@@ -100,6 +102,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
         PostError.None when result.Value is not null => Ok(result.Value),
         PostError.NotFound => NotFound(new { error = "Reply not found." }),
         PostError.Forbidden => Forbid(),
+        PostError.ThreadLocked => Conflict(new { error = "This thread is locked; replies cannot be edited." }),
         _ => Problem("An unexpected error occurred.")
     };
 
@@ -109,4 +112,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return int.TryParse(raw, out userId);
     }
+
+    /// <summary>True if the caller carries the moderator role claim.</summary>
+    private bool IsModerator() => User.IsInRole(ModeratorRole.Name);
 }

@@ -68,14 +68,15 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
     }
 
     public async Task<ThreadResult<ThreadDetailResponse>> DeleteAsync(
-        int id, int currentUserId, CancellationToken ct = default)
+        int id, int currentUserId, bool isModerator, CancellationToken ct = default)
     {
         // Read-path fetch first so the snapshot includes the Author for the response.
         var snapshotSource = await repository.GetByIdAsync(id, ct);
         if (snapshotSource is null)
             return ThreadResult<ThreadDetailResponse>.Fail(ThreadError.NotFound);
 
-        if (snapshotSource.AuthorId != currentUserId)
+        // Owner or moderator may delete the thread.
+        if (snapshotSource.AuthorId != currentUserId && !isModerator)
             return ThreadResult<ThreadDetailResponse>.Fail(ThreadError.Forbidden);
 
         var snapshot = ToDetail(snapshotSource);
@@ -107,7 +108,9 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
         t.AuthorId,
         t.Author?.UserName ?? "(unknown)",
         t.CreatedAtUtc,
-        t.UpdatedAtUtc);
+        t.UpdatedAtUtc,
+        t.IsPinned,
+        t.IsLocked);
 
     private static ThreadDetailResponse ToDetail(ForumThread t) => new(
         t.Id,
@@ -116,5 +119,7 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
         t.AuthorId,
         t.Author?.UserName ?? "(unknown)",
         t.CreatedAtUtc,
-        t.UpdatedAtUtc);
+        t.UpdatedAtUtc,
+        t.IsPinned,
+        t.IsLocked);
 }

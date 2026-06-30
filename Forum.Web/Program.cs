@@ -2,6 +2,7 @@
 using Blazored.LocalStorage;
 using Forum.Web.Components;
 using Forum.Web.Features.Auth;
+using Forum.Web.Features.Moderation;
 using Forum.Web.Features.Posts;
 using Forum.Web.Features.Profiles;
 using Forum.Web.Features.Threads;
@@ -34,6 +35,9 @@ builder.Services.AddVotesFeature(builder.Configuration);
 
 // Profiles feature slice (typed HttpClient; public reads).
 builder.Services.AddProfilesFeature(builder.Configuration);
+
+// Moderation feature slice (typed HttpClient; moderator-only pin/lock).
+builder.Services.AddModerationFeature(builder.Configuration);
 
 var app = builder.Build();
 

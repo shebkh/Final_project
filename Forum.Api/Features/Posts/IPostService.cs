@@ -10,7 +10,8 @@ public enum PostError
     None = 0,
     ThreadNotFound,
     NotFound,
-    Forbidden
+    Forbidden,
+    ThreadLocked
 }
 
 /// <summary>Generic result carrying an optional payload plus an error classification.</summary>
@@ -33,7 +34,8 @@ public interface IPostService
         int threadId, CreatePostRequest request, int authorId, CancellationToken ct = default);
 
     Task<PostResult<PostResponse>> UpdateAsync(
-        int id, UpdatePostRequest request, int currentUserId, CancellationToken ct = default);
+        int id, UpdatePostRequest request, int currentUserId, bool isModerator, CancellationToken ct = default);
 
-    Task<PostResult<PostResponse>> DeleteAsync(int id, int currentUserId, CancellationToken ct = default);
+    Task<PostResult<PostResponse>> DeleteAsync(
+        int id, int currentUserId, bool isModerator, CancellationToken ct = default);
 }

@@ -1,6 +1,7 @@
 @* Forum.Web/Features/Threads/ThreadDetail.razor *@
 @page "/threads/{Id:int}"
 @inject IThreadApiClient ThreadApi
+@inject IModerationApiClient ModerationApi
 @inject NavigationManager Navigation
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
@@ -18,7 +19,17 @@ else if (_error is not null)
 else if (_thread is not null)
 {
     <article class="thread-detail">
-        <h1>@_thread.Title</h1>
+        <h1>
+            @if (_thread.IsPinned)
+            {
+                <span class="badge badge-pinned" title="Pinned by a moderator">📌 Pinned</span>
+            }
+            @if (_thread.IsLocked)
+            {
+                <span class="badge badge-locked" title="Locked by a moderator">🔒 Locked</span>
+            }
+            @_thread.Title
+        </h1>
         <div class="thread-meta">
             by <a class="author-link" href="@($"/users/{_thread.AuthorId}")">@_thread.AuthorUserName</a>
             · @_thread.CreatedAtUtc.ToLocalTime().ToString("g")
@@ -30,12 +41,31 @@ else if (_thread is not null)
 
         <div class="thread-body">@_thread.Body</div>
 
+        <AuthorizeView Roles="Moderator">
+            <div class="mod-bar">
+                <span class="mod-bar-label">Moderator</span>
+                <button class="btn btn-link-dark" @onclick="TogglePinAsync" disabled="@_modBusy">
+                    @(_thread.IsPinned ? "Unpin" : "Pin")
+                </button>
+                <button class="btn btn-link-dark" @onclick="ToggleLockAsync" disabled="@_modBusy">
+                    @(_thread.IsLocked ? "Unlock" : "Lock")
+                </button>
+                @if (_modError is not null)
+                {
+                    <span class="auth-error" role="alert">@_modError</span>
+                }
+            </div>
+        </AuthorizeView>
+
         <VoteBox Kind="VoteTargetKind.Thread" TargetId="Id" />
 
-        @if (_isOwner)
+        @if (_isOwner || _isModerator)
         {
             <div class="form-actions">
-                <a class="btn btn-primary btn-inline" href="@($"/threads/{Id}/edit")">Edit</a>
+                @if (_isOwner)
+                {
+                    <a class="btn btn-primary btn-inline" href="@($"/threads/{Id}/edit")">Edit</a>
+                }
                 <button class="btn btn-danger" @onclick="DeleteAsync" disabled="@_deleting">
                     @(_deleting ? "Deleting…" : "Delete")
                 </button>
@@ -47,57 +77,7 @@ else if (_thread is not null)
         }
     </article>
 
-    <PostList ThreadId="Id" />
+    <PostList ThreadId="Id" Locked="_thread.IsLocked" />
 
     <a class="btn btn-link-dark" href="/threads">← Back to threads</a>
-}
-
-@code {
-    [Parameter] public int Id { get; set; }
-    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
-
-    private ThreadDetailResponse? _thread;
-    private bool _loading = true;
-    private bool _isOwner;
-    private bool _deleting;
-    private string? _error;
-    private string? _actionError;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var outcome = await ThreadApi.GetByIdAsync(Id);
-        if (outcome.Succeeded)
-        {
-            _thread = outcome.Data;
-            _isOwner = await CurrentUserIdAsync() == _thread!.AuthorId;
-        }
-        else
-        {
-            _error = outcome.Error;
-        }
-        _loading = false;
-    }
-
-    private async Task DeleteAsync()
-    {
-        _deleting = true;
-        _actionError = null;
-
-        var outcome = await ThreadApi.DeleteAsync(Id);
-        if (outcome.Succeeded)
-            Navigation.NavigateTo("/threads");
-        else
-        {
-            _actionError = outcome.Error;
-            _deleting = false;
-        }
-    }
-
-    private async Task<int?> CurrentUserIdAsync()
-    {
-        if (AuthState is null) return null;
-        var user = (await AuthState).User;
-        var raw = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        return int.TryParse(raw, out var id) ? id : null;
-    }
 }

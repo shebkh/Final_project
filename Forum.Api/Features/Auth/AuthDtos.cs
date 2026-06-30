@@ -16,4 +16,5 @@ public record AuthResponse(
     DateTime ExpiresAtUtc,
     int UserId,
     string UserName,
-    string Email);
+    string Email,
+    bool IsModerator);

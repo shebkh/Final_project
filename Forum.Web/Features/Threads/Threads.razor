@@ -32,6 +32,14 @@ else
         @foreach (var thread in _threads)
         {
             <li class="thread-card">
+                @if (thread.IsPinned)
+                {
+                    <span class="badge badge-pinned" title="Pinned by a moderator">📌 Pinned</span>
+                }
+                @if (thread.IsLocked)
+                {
+                    <span class="badge badge-locked" title="Locked by a moderator">🔒 Locked</span>
+                }
                 <a class="thread-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
                 <p class="thread-excerpt">@thread.Excerpt</p>
                 <div class="thread-meta">

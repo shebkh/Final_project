@@ -15,7 +15,9 @@ public record ThreadSummaryResponse(
     int AuthorId,
     string AuthorUserName,
     DateTime CreatedAtUtc,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    bool IsPinned,
+    bool IsLocked);
 
 /// <summary>Full projection for a single thread's detail view.</summary>
 public record ThreadDetailResponse(
@@ -25,4 +27,6 @@ public record ThreadDetailResponse(
     int AuthorId,
     string AuthorUserName,
     DateTime CreatedAtUtc,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    bool IsPinned,
+    bool IsLocked);
