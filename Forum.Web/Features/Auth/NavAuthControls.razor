@@ -1,0 +1,26 @@
+@* Forum.Web/Features/Auth/NavAuthControls.razor *@
+@* The interactive slice of the top nav: the sign-out button needs an event
+   handler, so this component owns the render mode. MainLayout stays static —
+   a layout cannot declare @rendermode because @Body can't cross the boundary. *@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject IAuthManager AuthManager
+@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized>
+        <span class="greeting">Hi, @context.User.Identity?.Name</span>
+        <button class="btn btn-link" @onclick="LogoutAsync">Sign out</button>
+    </Authorized>
+    <NotAuthorized>
+        <a href="/login">Sign in</a>
+        <a href="/register">Register</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async Task LogoutAsync()
+    {
+        await AuthManager.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+}
