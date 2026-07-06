@@ -1,0 +1,289 @@
+@* Forum.Web/Features/Landing/Landing.razor *@
+@page "/"
+@layout LandingLayout
+
+<PageTitle>Quorum — Where every voice reaches quorum.</PageTitle>
+
+<HeadContent>
+    @* LOCKED §4 — fonts via Google Fonts. *@
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+    @* Landing-only stylesheet — never touches the forum app chrome. *@
+    <link rel="stylesheet" href="css/landing.css" />
+</HeadContent>
+
+<div id="q-landing" class="q-landing" style="@RootStyle" data-motion="@MotionIntensityValue">
+
+    @* Top scroll-progress bar (§7). *@
+    <div id="q-progress" class="q-progress"></div>
+
+    @* ---------- §6 BACKGROUND SYSTEM (back→front) ---------- *@
+    <canvas id="quorum-bg-canvas" class="q-bg-canvas"></canvas>
+    <div class="q-bg">
+        <div class="q-orb a"></div>
+        <div class="q-orb b"></div>
+        <div class="q-orb c"></div>
+    </div>
+    <div class="q-grid"></div>
+    <div class="q-noise"></div>
+    <div class="q-vignette"></div>
+
+    @* Inline SVG displacement filter (§5c) — declared once, referenced by all
+       glass via backdrop-filter: url(#liquidGlass). Zero-size, non-rendering. *@
+    <svg width="0" height="0" aria-hidden="true" focusable="false"
+         style="position:absolute;pointer-events:none">
+        <filter id="liquidGlass">
+            <feTurbulence type="fractalNoise" baseFrequency="0.009 0.013"
+                          numOctaves="2" seed="9" result="noise" />
+            <feGaussianBlur in="noise" stdDeviation="1.6" result="blur" />
+            <feDisplacementMap in="SourceGraphic" in2="blur" scale="26"
+                               xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </svg>
+
+    @* ---------- §1 NAV (fixed) ---------- *@
+    <nav id="q-nav" class="q-nav">
+        <a class="q-logo" href="/">
+            <span class="q-logo-mark" data-qanim></span>
+            Quorum
+        </a>
+        <div class="q-nav-links">
+            <a href="#features">Product</a>
+            <a href="#how">How it works</a>
+            <a href="#">Communities</a>
+            <a href="#">Pricing</a>
+        </div>
+        <div class="q-nav-right">
+            <a class="q-signin" href="/login">Sign in</a>
+            <a class="q-btn q-glass q-glass-interactive q-btn-sm q-btn-accent" href="/register">
+                <span class="q-btn-glow">Get started</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="q-content">
+
+        @* ---------- §2 HERO ---------- *@
+        <header class="q-hero">
+            <div class="q-wrap q-hero-inner">
+                <div class="q-hero-copy">
+                    <span class="q-badge q-glass" data-reveal>
+                        <span class="q-dot" data-qanim></span>Now in open beta
+                    </span>
+                    <h1 data-reveal>
+                        Where every voice<br />reaches <span class="q-accent-word">quorum</span>.
+                    </h1>
+                    <p class="q-lead" data-reveal>
+                        The discussion forum for communities that think out loud. Threaded
+                        conversations, signal over noise, and reputation that actually means
+                        something.
+                    </p>
+                    <div class="q-hero-actions" data-reveal>
+                        <a class="q-btn q-glass q-glass-interactive q-btn-accent" href="/register">
+                            <span class="q-btn-glow">Start a community</span>
+                        </a>
+                        <a class="q-btn q-glass q-glass-interactive" href="#features">
+                            Explore Quorum
+                        </a>
+                    </div>
+                    <div class="q-scroll-cue" data-reveal>
+                        <span class="q-cue-line" data-qanim></span>scroll
+                    </div>
+                </div>
+
+                @* Hero product-mockup panel. *@
+                <div class="q-hero-visual" data-reveal>
+                    <div class="q-mockup q-glass">
+                        <div class="q-mockup-head">
+                            <span class="q-mockup-eyebrow">/ design-systems</span>
+                            <span class="q-online"><span class="q-dot" data-qanim></span>14 online</span>
+                        </div>
+                        <div class="q-mockup-post">
+                            <div class="q-vote-col">
+                                <span class="q-vote-arrow" data-qanim>▲</span>
+                                <span class="q-vote-count">248</span>
+                            </div>
+                            <div class="q-mockup-body">
+                                <div class="q-mockup-title">Should we drop the variant API for slots?</div>
+                                <div class="q-mockup-meta">opened by @@lena · 2h · 31 replies</div>
+                                <div class="q-reply">
+                                    Slots compose better long-term — variants get combinatorial fast.
+                                </div>
+                                <div class="q-reply q-reply-best">
+                                    Agreed. We can ship a codemod for the migration.
+                                    <span class="q-best-tag">best answer</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        @* ---------- §3 FEATURES ---------- *@
+        <section id="features" class="q-section">
+            <div class="q-wrap">
+                <div class="q-section-head" data-reveal>
+                    <span class="q-eyebrow">// what makes it different</span>
+                    <h2>A forum that rewards thinking.</h2>
+                </div>
+                <div class="q-grid-4">
+                    <article class="q-card q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-card-icon q-anim-nudge" data-qanim>→</div>
+                        <h3>Threaded by intent</h3>
+                        <p>
+                            Conversations branch where they need to, and collapse where they
+                            don't. Follow a single line of reasoning without losing the room.
+                        </p>
+                    </article>
+                    <article class="q-card q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-card-icon q-anim-breathe" data-qanim>◎</div>
+                        <h3>Signal over noise</h3>
+                        <p>
+                            Ranking surfaces the most thoughtful replies, not the loudest. The
+                            best answer rises whether it came first or last.
+                        </p>
+                    </article>
+                    <article class="q-card q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-card-icon q-anim-diamond" data-qanim>◆</div>
+                        <h3>Reputation with weight</h3>
+                        <p>
+                            Earn standing through contribution — karma you can't buy, transfer,
+                            or fake. Trust that compounds across communities.
+                        </p>
+                    </article>
+                    <article class="q-card q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-card-icon q-anim-bars" data-qanim>
+                            <span></span><span></span><span></span><span></span>
+                        </div>
+                        <h3>Live presence</h3>
+                        <p>
+                            See who's reading, typing, and deliberating in real time. Discussion
+                            feels alive, not archived.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        @* ---------- §4 HOW IT WORKS ---------- *@
+        <section id="how" class="q-section">
+            <div class="q-wrap">
+                <div class="q-section-head" data-reveal>
+                    <span class="q-eyebrow">// how it works</span>
+                    <h2>From empty room to consensus.</h2>
+                </div>
+                <div class="q-grid-3">
+                    <article class="q-step q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-step-num">01</div>
+                        <h3>Create a space</h3>
+                        <p>
+                            Spin up a community in seconds. Set the tone, invite your people,
+                            and bring your own domain.
+                        </p>
+                    </article>
+                    <article class="q-step q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-step-num">02</div>
+                        <h3>Open the floor</h3>
+                        <p>
+                            Post a topic and set the rules of engagement. Quorum handles
+                            threading, ranking, and moderation.
+                        </p>
+                    </article>
+                    <article class="q-step q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-step-num">03</div>
+                        <h3>Reach quorum</h3>
+                        <p>
+                            Watch consensus form as the strongest ideas rise and the best answer
+                            gets marked. Decisions, documented.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        @* ---------- §5 STATS ---------- *@
+        <section id="stats" class="q-stats">
+            <div class="q-wrap">
+                <div class="q-grid-stats">
+                    <div class="q-stat q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-stat-num" data-count="12" data-decimals="0" data-suffix="k+">12k+</div>
+                        <div class="q-stat-label">communities convening</div>
+                    </div>
+                    <div class="q-stat q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-stat-num" data-count="4.2" data-decimals="1" data-suffix="M">4.2M</div>
+                        <div class="q-stat-label">discussions resolved</div>
+                    </div>
+                    <div class="q-stat q-glass q-glass-card q-glass-interactive" data-reveal>
+                        <div class="q-stat-num" data-count="92" data-decimals="0" data-suffix="%">92%</div>
+                        <div class="q-stat-label">find a best answer</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* ---------- §6 CTA ---------- *@
+        <section id="cta" class="q-cta">
+            <div class="q-wrap">
+                <div class="q-cta-panel q-glass q-glass-interactive" data-reveal>
+                    <h2>Ready to reach quorum?</h2>
+                    <p>
+                        Bring your community somewhere built for real discussion. Free for open
+                        communities, forever.
+                    </p>
+                    <a class="q-btn q-glass q-glass-interactive q-btn-accent" href="/register">
+                        <span class="q-btn-glow">Start your community</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    @* ---------- §7 FOOTER ---------- *@
+    <footer class="q-footer">
+        <div class="q-wrap">
+            <div class="q-footer-top">
+                <div class="q-footer-brand">
+                    <a class="q-logo" href="/">
+                        <span class="q-logo-mark" data-qanim></span>
+                        Quorum
+                    </a>
+                    <p class="q-footer-blurb">
+                        Discussion forums for communities that think out loud.
+                    </p>
+                </div>
+                <div class="q-footer-cols">
+                    <div class="q-footer-col">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#">Pricing</a>
+                        <a href="#">Changelog</a>
+                    </div>
+                    <div class="q-footer-col">
+                        <h4>Company</h4>
+                        <a href="#">About</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Blog</a>
+                    </div>
+                    <div class="q-footer-col">
+                        <h4>Resources</h4>
+                        <a href="#">Docs</a>
+                        <a href="#">Community</a>
+                        <a href="#">Status</a>
+                    </div>
+                </div>
+            </div>
+            <div class="q-footer-legal">
+                <span>© 2026 Quorum Labs, Inc.</span>
+                <span>designed for deliberation</span>
+            </div>
+        </div>
+    </footer>
+
+    @* Self-initializing motion module (§6–§7). Static SSR + plain module script
+       means the no-JS fallback shows the complete page (reveals stay visible). *@
+    <script type="module" src="js/landing.js"></script>
+</div>
