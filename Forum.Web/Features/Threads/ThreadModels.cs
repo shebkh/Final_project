@@ -12,12 +12,15 @@ public sealed class ThreadEditModel
 
     [Required, StringLength(10_000, MinimumLength = 10)]
     public string Body { get; set; } = string.Empty;
+
+    /// <summary>Optional category; null = uncategorized.</summary>
+    public int? CategoryId { get; set; }
 }
 
 // --- Wire DTOs matching the API's request/response shapes ---
 
-public record CreateThreadRequest(string Title, string Body);
-public record UpdateThreadRequest(string Title, string Body);
+public record CreateThreadRequest(string Title, string Body, int? CategoryId);
+public record UpdateThreadRequest(string Title, string Body, int? CategoryId);
 
 public record ThreadSummaryResponse(
     int Id,
@@ -28,7 +31,9 @@ public record ThreadSummaryResponse(
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc,
     bool IsPinned,
-    bool IsLocked);
+    bool IsLocked,
+    int? CategoryId,
+    string? CategoryName);
 
 public record ThreadDetailResponse(
     int Id,
@@ -39,7 +44,9 @@ public record ThreadDetailResponse(
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc,
     bool IsPinned,
-    bool IsLocked);
+    bool IsLocked,
+    int? CategoryId,
+    string? CategoryName);
 
 /// <summary>Result wrapper so components handle failures without exceptions.</summary>
 public record ThreadOutcome<T>(bool Succeeded, T? Data, string? Error) where T : class

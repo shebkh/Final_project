@@ -528,6 +528,36 @@ body {
     border: 1px solid #d0d7de;
 }
 
+.badge-category {
+    background: #ddf4ff;
+    color: #0969da;
+    border: 1px solid #b6e3ff;
+    text-decoration: none;
+}
+
+.badge-category:hover {
+    background: #b6e3ff;
+}
+
+/* --- Categories --- */
+.category-child {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+    border-left: 2px solid #d0d7de;
+}
+
+.threads-filter {
+    max-width: 320px;
+    margin-bottom: 1rem;
+}
+
+.mod-bar .form-control {
+    width: auto;
+    display: inline-block;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.85rem;
+}
+
 .mod-bar {
     display: flex;
     align-items: center;

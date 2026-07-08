@@ -3,6 +3,7 @@ using System.Text;
 using Forum.Api.Common.Validation;
 using Forum.Api.Data;
 using Forum.Api.Features.Auth;
+using Forum.Api.Features.Categories;
 using Forum.Api.Features.Moderation;
 using Forum.Api.Features.Posts;
 using Forum.Api.Features.Profiles;
@@ -70,6 +71,7 @@ builder.Services.AddPostsFeature();
 builder.Services.AddVotesFeature();
 builder.Services.AddProfilesFeature();
 builder.Services.AddModerationFeature();
+builder.Services.AddCategoriesFeature();
 
 var app = builder.Build();
 

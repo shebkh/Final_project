@@ -1,5 +1,6 @@
 // Forum.Api/Data/AppDbContext.cs
 using Forum.Api.Features.Auth;
+using Forum.Api.Features.Categories;
 using Forum.Api.Features.Posts;
 using Forum.Api.Features.Threads;
 using Forum.Api.Features.Votes;
@@ -18,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<ThreadVote> ThreadVotes => Set<ThreadVote>();
     public DbSet<PostVote> PostVotes => Set<PostVote>();
+    public DbSet<Category> Categories => Set<Category>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,8 +76,44 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(t => t.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // A thread may be filed under one category; deleting the category
+            // uncategorizes its threads rather than blocking or cascading.
+            entity.HasOne(t => t.Category)
+                .WithMany()
+                .HasForeignKey(t => t.CategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // Listing is ordered newest-first, so index the creation timestamp.
             entity.HasIndex(t => t.CreatedAtUtc);
+
+            // Category filtering on the thread list.
+            entity.HasIndex(t => t.CategoryId);
+        });
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.ToTable("Categories");
+            entity.HasKey(c => c.Id);
+
+            entity.Property(c => c.Name)
+                .IsRequired()
+                .HasMaxLength(80);
+
+            entity.Property(c => c.Slug)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            // Slug uniqueness doubles as the duplicate-name guard (insert path
+            // catches SQL 2627/2601 and reports a name conflict).
+            entity.HasIndex(c => c.Slug).IsUnique();
+
+            // Self-referencing parent FK. SQL Server forbids SET NULL/CASCADE on
+            // self-refs, so Restrict; the service blocks deleting a category that
+            // still has children.
+            entity.HasOne(c => c.Parent)
+                .WithMany()
+                .HasForeignKey(c => c.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Post>(entity =>

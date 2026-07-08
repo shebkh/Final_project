@@ -5,8 +5,9 @@ namespace Forum.Web.Features.Moderation;
 
 public record SetPinRequest(bool Pinned);
 public record SetLockRequest(bool Locked);
+public record MoveThreadRequest(int? CategoryId);
 
-public record ThreadModerationResponse(int ThreadId, bool IsPinned, bool IsLocked);
+public record ThreadModerationResponse(int ThreadId, bool IsPinned, bool IsLocked, int? CategoryId);
 
 /// <summary>Result wrapper so components handle failures without exceptions.</summary>
 public record ModerationOutcome(bool Succeeded, ThreadModerationResponse? Data, string? Error)

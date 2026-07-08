@@ -8,6 +8,9 @@ public interface IModerationApiClient
 {
     Task<ModerationOutcome> SetPinnedAsync(int threadId, bool pinned, CancellationToken ct = default);
     Task<ModerationOutcome> SetLockedAsync(int threadId, bool locked, CancellationToken ct = default);
+
+    /// <summary>Files the thread under the given category (null = uncategorize).</summary>
+    Task<ModerationOutcome> MoveAsync(int threadId, int? categoryId, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -24,6 +27,10 @@ public sealed class ModerationApiClient(HttpClient http) : IModerationApiClient
     public Task<ModerationOutcome> SetLockedAsync(int threadId, bool locked, CancellationToken ct = default) =>
         SendAsync(() => http.PutAsJsonAsync(
             $"api/moderation/threads/{threadId}/lock", new SetLockRequest(locked), ct), ct);
+
+    public Task<ModerationOutcome> MoveAsync(int threadId, int? categoryId, CancellationToken ct = default) =>
+        SendAsync(() => http.PutAsJsonAsync(
+            $"api/moderation/threads/{threadId}/move", new MoveThreadRequest(categoryId), ct), ct);
 
     private static async Task<ModerationOutcome> SendAsync(
         Func<Task<HttpResponseMessage>> send, CancellationToken ct)

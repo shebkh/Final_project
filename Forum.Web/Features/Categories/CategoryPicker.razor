@@ -1,0 +1,55 @@
+@* Forum.Web/Features/Categories/CategoryPicker.razor *@
+@* Embedded category dropdown (no @page / @rendermode — inherits the host page's
+   render mode). Self-loads the category list; roots first with their children
+   indented beneath them. Binds an optional CategoryId via @bind-Value. *@
+@inject ICategoryApiClient CategoryApi
+
+<select id="@Id" class="form-control" disabled="@(Disabled || _loading)"
+        value="@(Value?.ToString() ?? string.Empty)" @onchange="OnChangedAsync">
+    <option value="">@EmptyLabel</option>
+    @foreach (var root in Roots)
+    {
+        <option value="@root.Id">@root.Name</option>
+        @foreach (var child in ChildrenOf(root.Id))
+        {
+            <option value="@child.Id">— @child.Name</option>
+        }
+    }
+</select>
+@if (_error is not null)
+{
+    <p class="form-hint" role="alert">@_error</p>
+}
+
+@code {
+    [Parameter] public int? Value { get; set; }
+    [Parameter] public EventCallback<int?> ValueChanged { get; set; }
+    [Parameter] public string Id { get; set; } = "category";
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Text for the null option — "(no category)" in forms, "All categories" in filters.</summary>
+    [Parameter] public string EmptyLabel { get; set; } = "(no category)";
+
+    private IReadOnlyList<CategoryResponse> _categories = [];
+    private bool _loading = true;
+    private string? _error;
+
+    private IEnumerable<CategoryResponse> Roots =>
+        _categories.Where(c => c.ParentId is null);
+
+    private IEnumerable<CategoryResponse> ChildrenOf(int parentId) =>
+        _categories.Where(c => c.ParentId == parentId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var outcome = await CategoryApi.ListAsync();
+        if (outcome.Succeeded)
+            _categories = outcome.Data!;
+        else
+            _error = outcome.Error;
+        _loading = false;
+    }
+
+    private Task OnChangedAsync(ChangeEventArgs e) =>
+        ValueChanged.InvokeAsync(int.TryParse(e.Value?.ToString(), out var id) ? id : null);
+}

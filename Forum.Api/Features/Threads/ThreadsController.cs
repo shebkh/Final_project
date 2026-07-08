@@ -14,10 +14,13 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<ThreadSummaryResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> List(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] int? categoryId = null,
+        CancellationToken ct = default)
     {
-        var items = await threadService.ListAsync(page, pageSize, ct);
-        var total = await threadService.CountAsync(ct);
+        var items = await threadService.ListAsync(page, pageSize, categoryId, ct);
+        var total = await threadService.CountAsync(categoryId, ct);
         Response.Headers["X-Total-Count"] = total.ToString();
         return Ok(items);
     }
@@ -42,8 +45,11 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         if (!TryGetUserId(out var userId))
             return Unauthorized();
 
-        var created = await threadService.CreateAsync(request, userId, ct);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        var result = await threadService.CreateAsync(request, userId, ct);
+        if (result.Succeeded && result.Value is not null)
+            return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
+
+        return MapResult(result);
     }
 
     [HttpPut("{id:int}")]
@@ -88,6 +94,7 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         ThreadError.None when result.Value is not null => Ok(result.Value),
         ThreadError.NotFound => NotFound(new { error = "Thread not found." }),
         ThreadError.Forbidden => Forbid(),
+        ThreadError.CategoryNotFound => BadRequest(new { error = "Category not found." }),
         _ => Problem("An unexpected error occurred.")
     };
 

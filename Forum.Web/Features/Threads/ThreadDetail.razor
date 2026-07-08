@@ -31,6 +31,10 @@ else if (_thread is not null)
             @_thread.Title
         </h1>
         <div class="thread-meta">
+            @if (_thread.CategoryName is not null)
+            {
+                <a class="badge badge-category" href="@($"/threads?categoryId={_thread.CategoryId}")">@_thread.CategoryName</a>
+            }
             by <a class="author-link" href="@($"/users/{_thread.AuthorId}")">@_thread.AuthorUserName</a>
             · @_thread.CreatedAtUtc.ToLocalTime().ToString("g")
             @if (_thread.UpdatedAtUtc > _thread.CreatedAtUtc)
@@ -49,6 +53,12 @@ else if (_thread is not null)
                 </button>
                 <button class="btn btn-link-dark" @onclick="ToggleLockAsync" disabled="@_modBusy">
                     @(_thread.IsLocked ? "Unlock" : "Lock")
+                </button>
+                <CategoryPicker Id="mod-move-category" EmptyLabel="(no category)"
+                                @bind-Value="_moveCategoryId" Disabled="_modBusy" />
+                <button class="btn btn-link-dark" @onclick="MoveAsync"
+                        disabled="@(_modBusy || _moveCategoryId == _thread.CategoryId)">
+                    Move
                 </button>
                 @if (_modError is not null)
                 {

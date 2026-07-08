@@ -17,6 +17,7 @@ public partial class ThreadDetail : ComponentBase
     private bool _isModerator;
     private bool _deleting;
     private bool _modBusy;
+    private int? _moveCategoryId;
     private string? _error;
     private string? _actionError;
     private string? _modError;
@@ -27,8 +28,9 @@ public partial class ThreadDetail : ComponentBase
         if (outcome.Succeeded)
         {
             _thread = outcome.Data;
+            _moveCategoryId = _thread!.CategoryId;
             var user = await CurrentUserAsync();
-            _isOwner = CurrentUserId(user) == _thread!.AuthorId;
+            _isOwner = CurrentUserId(user) == _thread.AuthorId;
             _isModerator = user?.IsInRole("Moderator") ?? false;
         }
         else
@@ -79,6 +81,32 @@ public partial class ThreadDetail : ComponentBase
             _thread = _thread with { IsPinned = outcome.Data!.IsPinned, IsLocked = outcome.Data.IsLocked };
         else
             _modError = outcome.Error;
+
+        _modBusy = false;
+    }
+
+    private async Task MoveAsync()
+    {
+        if (_thread is null || _moveCategoryId == _thread.CategoryId) return;
+        _modBusy = true;
+        _modError = null;
+
+        var outcome = await ModerationApi.MoveAsync(Id, _moveCategoryId);
+        if (outcome.Succeeded)
+        {
+            // Re-read the thread: the moderation response carries the CategoryId
+            // but not the category name the badge displays.
+            var refreshed = await ThreadApi.GetByIdAsync(Id);
+            if (refreshed.Succeeded)
+            {
+                _thread = refreshed.Data;
+                _moveCategoryId = _thread!.CategoryId;
+            }
+        }
+        else
+        {
+            _modError = outcome.Error;
+        }
 
         _modBusy = false;
     }

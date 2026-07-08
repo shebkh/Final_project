@@ -1,0 +1,121 @@
+@* Forum.Web/Features/Categories/Categories.razor *@
+@page "/categories"
+@inject ICategoryApiClient CategoryApi
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Categories</PageTitle>
+
+<div class="threads-header">
+    <h1>Categories</h1>
+</div>
+
+@if (_loading)
+{
+    <p>Loading categories…</p>
+}
+else if (_error is not null)
+{
+    <p class="auth-error" role="alert">@_error</p>
+}
+else
+{
+    @if (_categories.Count == 0)
+    {
+        <p>No categories yet.</p>
+    }
+    else
+    {
+        <ul class="thread-list">
+            @foreach (var root in Roots)
+            {
+                <li class="thread-card">
+                    @RenderCategory(root)
+                    @foreach (var child in ChildrenOf(root.Id))
+                    {
+                        <div class="category-child">@RenderCategory(child)</div>
+                    }
+                </li>
+            }
+        </ul>
+    }
+
+    <AuthorizeView Roles="Moderator" Context="authContext">
+        <div class="mod-bar">
+            <span class="mod-bar-label">Moderator</span>
+            <span>Create, rename, and delete categories below.</span>
+        </div>
+
+        <div class="post-add">
+            <h3 class="post-heading">New category</h3>
+            <EditForm Model="_createModel" OnValidSubmit="CreateAsync" FormName="category-create">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label for="new-name">Name</label>
+                    <InputText id="new-name" class="form-control" @bind-Value="_createModel.Name" />
+                    <ValidationMessage For="() => _createModel.Name" />
+                </div>
+                <div class="form-group">
+                    <label for="new-parent">Parent (optional — makes this a sub-category)</label>
+                    <InputSelect id="new-parent" class="form-control" @bind-Value="_createModel.ParentId">
+                        <option value="">(none — root category)</option>
+                        @foreach (var root in Roots)
+                        {
+                            <option value="@root.Id">@root.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+                @if (_createError is not null)
+                {
+                    <p class="auth-error" role="alert">@_createError</p>
+                }
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-inline" disabled="@_createBusy">
+                        @(_createBusy ? "Creating…" : "Create category")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </AuthorizeView>
+}
+
+@code {
+    // Shared row template: name link + thread count + moderator rename/delete
+    // controls (inline edit swaps the row for a small form).
+    private RenderFragment RenderCategory(CategoryResponse category) => __builder =>
+    {
+        @if (_editingId == category.Id)
+        {
+            <EditForm Model="_editModel" OnValidSubmit="SaveEditAsync" FormName="@($"category-edit-{category.Id}")">
+                <DataAnnotationsValidator />
+                <div class="form-actions">
+                    <InputText class="form-control" @bind-Value="_editModel.Name" />
+                    <button type="submit" class="btn btn-primary btn-inline" disabled="@_editBusy">
+                        @(_editBusy ? "Saving…" : "Save")
+                    </button>
+                    <button type="button" class="btn btn-link-dark" @onclick="CancelEdit">Cancel</button>
+                </div>
+                <ValidationMessage For="() => _editModel.Name" />
+                @if (_editError is not null)
+                {
+                    <p class="auth-error" role="alert">@_editError</p>
+                }
+            </EditForm>
+        }
+        else
+        {
+            <a class="thread-title" href="@($"/threads?categoryId={category.Id}")">@category.Name</a>
+            <span class="thread-meta"> · @category.ThreadCount thread@(category.ThreadCount == 1 ? "" : "s")</span>
+            <AuthorizeView Roles="Moderator" Context="modContext">
+                <button class="btn btn-link-dark" @onclick="() => BeginEdit(category)">Rename</button>
+                <button class="btn btn-link-danger" @onclick="() => DeleteAsync(category)"
+                        disabled="@(_deleteBusyId == category.Id)">
+                    @(_deleteBusyId == category.Id ? "Deleting…" : "Delete")
+                </button>
+            </AuthorizeView>
+            @if (_actionErrorId == category.Id && _actionError is not null)
+            {
+                <p class="auth-error" role="alert">@_actionError</p>
+            }
+        }
+    };
+}

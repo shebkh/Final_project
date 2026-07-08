@@ -1,21 +1,25 @@
 // Forum.Api/Features/Threads/ThreadService.cs
+using Forum.Api.Features.Categories;
+
 namespace Forum.Api.Features.Threads;
 
-public sealed class ThreadService(IThreadRepository repository) : IThreadService
+public sealed class ThreadService(
+    IThreadRepository repository,
+    ICategoryRepository categoryRepository) : IThreadService
 {
     private const int MaxPageSize = 50;
     private const int ExcerptLength = 200;
 
     public async Task<IReadOnlyList<ThreadSummaryResponse>> ListAsync(
-        int page, int pageSize, CancellationToken ct = default)
+        int page, int pageSize, int? categoryId = null, CancellationToken ct = default)
     {
         var (skip, take) = Normalize(page, pageSize);
-        var threads = await repository.ListAsync(skip, take, ct);
+        var threads = await repository.ListAsync(skip, take, categoryId, ct);
         return threads.Select(ToSummary).ToList();
     }
 
-    public Task<int> CountAsync(CancellationToken ct = default) =>
-        repository.CountAsync(ct);
+    public Task<int> CountAsync(int? categoryId = null, CancellationToken ct = default) =>
+        repository.CountAsync(categoryId, ct);
 
     public async Task<ThreadResult<ThreadDetailResponse>> GetByIdAsync(int id, CancellationToken ct = default)
     {
@@ -25,14 +29,18 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
             : ThreadResult<ThreadDetailResponse>.Success(ToDetail(thread));
     }
 
-    public async Task<ThreadDetailResponse> CreateAsync(
+    public async Task<ThreadResult<ThreadDetailResponse>> CreateAsync(
         CreateThreadRequest request, int authorId, CancellationToken ct = default)
     {
+        if (!await CategoryIsValidAsync(request.CategoryId, ct))
+            return ThreadResult<ThreadDetailResponse>.Fail(ThreadError.CategoryNotFound);
+
         var now = DateTime.UtcNow;
         var thread = new ForumThread
         {
             Title = request.Title.Trim(),
             Body = request.Body.Trim(),
+            CategoryId = request.CategoryId,
             AuthorId = authorId,
             CreatedAtUtc = now,
             UpdatedAtUtc = now
@@ -40,9 +48,9 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
 
         await repository.AddAsync(thread, ct);
 
-        // Re-read so the Author navigation is populated for the response.
+        // Re-read so the Author/Category navigations are populated for the response.
         var created = await repository.GetByIdAsync(thread.Id, ct);
-        return ToDetail(created!);
+        return ThreadResult<ThreadDetailResponse>.Success(ToDetail(created!));
     }
 
     public async Task<ThreadResult<ThreadDetailResponse>> UpdateAsync(
@@ -56,13 +64,17 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
         if (thread.AuthorId != currentUserId)
             return ThreadResult<ThreadDetailResponse>.Fail(ThreadError.Forbidden);
 
+        if (!await CategoryIsValidAsync(request.CategoryId, ct))
+            return ThreadResult<ThreadDetailResponse>.Fail(ThreadError.CategoryNotFound);
+
         thread.Title = request.Title.Trim();
         thread.Body = request.Body.Trim();
+        thread.CategoryId = request.CategoryId;
         thread.UpdatedAtUtc = DateTime.UtcNow;
 
         await repository.SaveChangesAsync(ct);
 
-        // Re-read with the Author navigation for the response projection.
+        // Re-read with the Author/Category navigations for the response projection.
         var updated = await repository.GetByIdAsync(id, ct);
         return ThreadResult<ThreadDetailResponse>.Success(ToDetail(updated!));
     }
@@ -90,6 +102,10 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
         return ThreadResult<ThreadDetailResponse>.Success(snapshot);
     }
 
+    /// <summary>Null is valid (uncategorized); otherwise the category must exist.</summary>
+    private async Task<bool> CategoryIsValidAsync(int? categoryId, CancellationToken ct) =>
+        categoryId is null || await categoryRepository.ExistsAsync(categoryId.Value, ct);
+
     private static (int skip, int take) Normalize(int page, int pageSize)
     {
         if (page < 1) page = 1;
@@ -110,7 +126,9 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
         t.CreatedAtUtc,
         t.UpdatedAtUtc,
         t.IsPinned,
-        t.IsLocked);
+        t.IsLocked,
+        t.CategoryId,
+        t.Category?.Name);
 
     private static ThreadDetailResponse ToDetail(ForumThread t) => new(
         t.Id,
@@ -121,5 +139,7 @@ public sealed class ThreadService(IThreadRepository repository) : IThreadService
         t.CreatedAtUtc,
         t.UpdatedAtUtc,
         t.IsPinned,
-        t.IsLocked);
+        t.IsLocked,
+        t.CategoryId,
+        t.Category?.Name);
 }

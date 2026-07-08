@@ -1,6 +1,7 @@
 @* Forum.Web/Features/Threads/Threads.razor *@
 @page "/threads"
 @inject IThreadApiClient ThreadApi
+@inject NavigationManager Navigation
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>Threads</PageTitle>
@@ -14,6 +15,12 @@
     </AuthorizeView>
 </div>
 
+<div class="form-group threads-filter">
+    <label for="thread-filter">Category</label>
+    <CategoryPicker Id="thread-filter" EmptyLabel="All categories"
+                    Value="CategoryId" ValueChanged="OnFilterChangedAsync" />
+</div>
+
 @if (_loading)
 {
     <p>Loading threads…</p>
@@ -24,7 +31,11 @@ else if (_error is not null)
 }
 else if (_threads.Count == 0)
 {
-    <p>No threads yet. Be the first to start a discussion.</p>
+    <p>
+        @(CategoryId is null
+            ? "No threads yet. Be the first to start a discussion."
+            : "No threads in this category yet.")
+    </p>
 }
 else
 {
@@ -40,6 +51,10 @@ else
                 {
                     <span class="badge badge-locked" title="Locked by a moderator">🔒 Locked</span>
                 }
+                @if (thread.CategoryName is not null)
+                {
+                    <a class="badge badge-category" href="@($"/threads?categoryId={thread.CategoryId}")">@thread.CategoryName</a>
+                }
                 <a class="thread-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
                 <p class="thread-excerpt">@thread.Excerpt</p>
                 <div class="thread-meta">
@@ -49,20 +64,4 @@ else
             </li>
         }
     </ul>
-}
-
-@code {
-    private IReadOnlyList<ThreadSummaryResponse> _threads = [];
-    private bool _loading = true;
-    private string? _error;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var outcome = await ThreadApi.ListAsync();
-        if (outcome.Succeeded)
-            _threads = outcome.Data!;
-        else
-            _error = outcome.Error;
-        _loading = false;
-    }
 }

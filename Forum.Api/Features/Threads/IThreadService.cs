@@ -9,7 +9,10 @@ public enum ThreadError
 {
     None = 0,
     NotFound,
-    Forbidden
+    Forbidden,
+
+    /// <summary>The requested CategoryId does not reference an existing category.</summary>
+    CategoryNotFound
 }
 
 /// <summary>Generic result carrying an optional payload plus an error classification.</summary>
@@ -23,13 +26,15 @@ public readonly record struct ThreadResult<T>(T? Value, ThreadError Error) where
 
 public interface IThreadService
 {
-    Task<IReadOnlyList<ThreadSummaryResponse>> ListAsync(int page, int pageSize, CancellationToken ct = default);
+    Task<IReadOnlyList<ThreadSummaryResponse>> ListAsync(
+        int page, int pageSize, int? categoryId = null, CancellationToken ct = default);
 
-    Task<int> CountAsync(CancellationToken ct = default);
+    Task<int> CountAsync(int? categoryId = null, CancellationToken ct = default);
 
     Task<ThreadResult<ThreadDetailResponse>> GetByIdAsync(int id, CancellationToken ct = default);
 
-    Task<ThreadDetailResponse> CreateAsync(CreateThreadRequest request, int authorId, CancellationToken ct = default);
+    Task<ThreadResult<ThreadDetailResponse>> CreateAsync(
+        CreateThreadRequest request, int authorId, CancellationToken ct = default);
 
     Task<ThreadResult<ThreadDetailResponse>> UpdateAsync(
         int id, UpdateThreadRequest request, int currentUserId, CancellationToken ct = default);

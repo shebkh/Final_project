@@ -34,10 +34,23 @@ public sealed class ModerationController(IModerationService moderationService) :
         return MapResult(result);
     }
 
+    [HttpPut("threads/{threadId:int}/move")]
+    [ProducesResponseType(typeof(ThreadModerationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Move(int threadId, MoveThreadRequest request, CancellationToken ct)
+    {
+        var result = await moderationService.MoveAsync(threadId, request.CategoryId, ct);
+        return MapResult(result);
+    }
+
     private IActionResult MapResult(ModerationResult<ThreadModerationResponse> result) => result.Error switch
     {
         ModerationError.None when result.Value is not null => Ok(result.Value),
         ModerationError.ThreadNotFound => NotFound(new { error = "Thread not found." }),
+        ModerationError.CategoryNotFound => BadRequest(new { error = "Category not found." }),
         _ => Problem("An unexpected error occurred.")
     };
 }

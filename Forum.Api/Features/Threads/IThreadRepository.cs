@@ -3,13 +3,17 @@ namespace Forum.Api.Features.Threads;
 
 public interface IThreadRepository
 {
-    /// <summary>Newest-first page of threads, with the Author navigation loaded (read-only).</summary>
-    Task<IReadOnlyList<ForumThread>> ListAsync(int skip, int take, CancellationToken ct = default);
+    /// <summary>
+    /// Newest-first page of threads, with the Author and Category navigations loaded
+    /// (read-only). A categoryId filter matches the category or its direct children.
+    /// </summary>
+    Task<IReadOnlyList<ForumThread>> ListAsync(
+        int skip, int take, int? categoryId = null, CancellationToken ct = default);
 
-    /// <summary>Total thread count, for paging metadata.</summary>
-    Task<int> CountAsync(CancellationToken ct = default);
+    /// <summary>Total thread count under the same optional category filter, for paging metadata.</summary>
+    Task<int> CountAsync(int? categoryId = null, CancellationToken ct = default);
 
-    /// <summary>Single thread with its Author loaded, read-only (no tracking). Null if not found.</summary>
+    /// <summary>Single thread with its Author and Category loaded, read-only (no tracking). Null if not found.</summary>
     Task<ForumThread?> GetByIdAsync(int id, CancellationToken ct = default);
 
     /// <summary>

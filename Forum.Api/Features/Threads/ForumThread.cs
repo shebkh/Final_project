@@ -1,5 +1,6 @@
 // Forum.Api/Features/Threads/ForumThread.cs
 using Forum.Api.Features.Auth;
+using Forum.Api.Features.Categories;
 
 namespace Forum.Api.Features.Threads;
 
@@ -27,6 +28,15 @@ public class ForumThread
     /// reply edits. Set only via the Moderation slice. Defaults to false.
     /// </summary>
     public bool IsLocked { get; set; }
+
+    /// <summary>
+    /// FK to the category this thread is filed under; null = uncategorized.
+    /// Set at creation/edit by the author, or via the Moderation slice's move action.
+    /// </summary>
+    public int? CategoryId { get; set; }
+
+    /// <summary>Navigation to the category. Loaded explicitly when needed.</summary>
+    public Category? Category { get; set; }
 
     /// <summary>FK to the User who created the thread.</summary>
     public int AuthorId { get; set; }
