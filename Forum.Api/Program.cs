@@ -7,6 +7,7 @@ using Forum.Api.Features.Categories;
 using Forum.Api.Features.Moderation;
 using Forum.Api.Features.Posts;
 using Forum.Api.Features.Profiles;
+using Forum.Api.Features.Search;
 using Forum.Api.Features.Threads;
 using Forum.Api.Features.Votes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -72,6 +73,7 @@ builder.Services.AddVotesFeature();
 builder.Services.AddProfilesFeature();
 builder.Services.AddModerationFeature();
 builder.Services.AddCategoriesFeature();
+builder.Services.AddSearchFeature();
 
 var app = builder.Build();
 

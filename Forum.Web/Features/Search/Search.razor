@@ -1,0 +1,57 @@
+@* Forum.Web/Features/Search/Search.razor *@
+@page "/search"
+@inject ISearchApiClient SearchApi
+@inject NavigationManager Navigation
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<PageTitle>Search</PageTitle>
+
+<div class="threads-header">
+    <h1>Search</h1>
+</div>
+
+<form class="search-bar" @onsubmit="SubmitAsync">
+    <input class="form-control search-input" type="search" placeholder="Search threads and replies…"
+           @bind="_input" @bind:event="oninput" />
+    <CategoryPicker Id="search-category" EmptyLabel="All categories" @bind-Value="_filterCategoryId" />
+    <button type="submit" class="btn btn-primary btn-inline" disabled="@_loading">Search</button>
+</form>
+
+@if (_loading)
+{
+    <p>Searching…</p>
+}
+else if (_error is not null)
+{
+    <p class="auth-error" role="alert">@_error</p>
+}
+else if (!_searched)
+{
+    <p class="post-signin">Enter a search term (at least 2 characters) to find threads and replies.</p>
+}
+else if (_results.Count == 0)
+{
+    <p>No results for <strong>@Q</strong>@(CategoryId is null ? "" : " in this category").</p>
+}
+else
+{
+    <p class="thread-meta">@_total result@(_total == 1 ? "" : "s") for <strong>@Q</strong></p>
+    <ul class="thread-list">
+        @foreach (var hit in _results)
+        {
+            <li class="thread-card">
+                <span class="badge badge-kind">@(hit.Kind == "Reply" ? "💬 Reply" : "🧵 Thread")</span>
+                @if (hit.CategoryName is not null)
+                {
+                    <a class="badge badge-category" href="@($"/threads?categoryId={hit.CategoryId}")">@hit.CategoryName</a>
+                }
+                <a class="thread-title" href="@($"/threads/{hit.ThreadId}")">@hit.ThreadTitle</a>
+                <p class="thread-excerpt">@hit.Snippet</p>
+                <div class="thread-meta">
+                    by <a class="author-link" href="@($"/users/{hit.AuthorId}")">@hit.AuthorUserName</a>
+                    · @hit.CreatedAtUtc.ToLocalTime().ToString("g")
+                </div>
+            </li>
+        }
+    </ul>
+}

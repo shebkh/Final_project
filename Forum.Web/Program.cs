@@ -4,6 +4,7 @@ using Forum.Web.Components;
 using Forum.Web.Features.Auth;
 using Forum.Web.Features.Categories;
 using Forum.Web.Features.Moderation;
+using Forum.Web.Features.Search;
 using Forum.Web.Features.Posts;
 using Forum.Web.Features.Profiles;
 using Forum.Web.Features.Threads;
@@ -42,6 +43,9 @@ builder.Services.AddModerationFeature(builder.Configuration);
 
 // Categories feature slice (typed HttpClient; public reads, moderator-only management).
 builder.Services.AddCategoriesFeature(builder.Configuration);
+
+// Search feature slice (typed HttpClient; anonymous keyword/category search).
+builder.Services.AddSearchFeature(builder.Configuration);
 
 var app = builder.Build();
 
