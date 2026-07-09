@@ -1,0 +1,45 @@
+@* Forum.Web/Components/Shared/MarkdownEditor.razor *@
+@* Markdown textarea with Write/Preview tabs. Embedded component — forwards the
+   standard Value/ValueChanged/ValueExpression triple to an inner InputTextArea,
+   so `<MarkdownEditor @bind-Value="Model.Body" />` keeps full EditForm and
+   <ValidationMessage> integration on the caller's side. *@
+@using System.Linq.Expressions
+
+<div class="md-editor">
+    <div class="md-tabs" role="tablist">
+        <button type="button" role="tab" class="md-tab @(_preview ? "" : "active")"
+                @onclick="() => _preview = false">Write</button>
+        <button type="button" role="tab" class="md-tab @(_preview ? "active" : "")"
+                @onclick="() => _preview = true">Preview</button>
+    </div>
+
+    @if (_preview)
+    {
+        <div class="md-preview">
+            @if (string.IsNullOrWhiteSpace(Value))
+            {
+                <p class="post-empty">Nothing to preview yet.</p>
+            }
+            else
+            {
+                <MarkdownBody Content="@Value" />
+            }
+        </div>
+    }
+    else
+    {
+        <InputTextArea id="@Id" class="form-control" rows="@Rows"
+                       Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" />
+        <p class="form-hint md-hint">Markdown supported: **bold** _italic_ `code` &gt; quote - list</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public Expression<Func<string?>>? ValueExpression { get; set; }
+    [Parameter] public int Rows { get; set; } = 6;
+    [Parameter] public string? Id { get; set; }
+
+    private bool _preview;
+}

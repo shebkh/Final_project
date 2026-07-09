@@ -15,12 +15,25 @@ public sealed class ThreadEditModel
 
     /// <summary>Optional category; null = uncategorized.</summary>
     public int? CategoryId { get; set; }
+
+    /// <summary>
+    /// Comma-separated tags typed by the author (e.g. "api, ef core, help").
+    /// Split into a list by the API client; the API normalizes and re-validates.
+    /// </summary>
+    [RegularExpression(@"^[A-Za-z0-9 ,-]*$",
+        ErrorMessage = "Tags may contain letters, digits, spaces, and hyphens, separated by commas.")]
+    [StringLength(160)]
+    public string TagsInput { get; set; } = string.Empty;
+
+    /// <summary>TagsInput split on commas, trimmed, empties dropped.</summary>
+    public IReadOnlyList<string> ParseTags() =>
+        TagsInput.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 }
 
 // --- Wire DTOs matching the API's request/response shapes ---
 
-public record CreateThreadRequest(string Title, string Body, int? CategoryId);
-public record UpdateThreadRequest(string Title, string Body, int? CategoryId);
+public record CreateThreadRequest(string Title, string Body, int? CategoryId, IReadOnlyList<string>? Tags);
+public record UpdateThreadRequest(string Title, string Body, int? CategoryId, IReadOnlyList<string>? Tags);
 
 public record ThreadSummaryResponse(
     int Id,
@@ -33,7 +46,8 @@ public record ThreadSummaryResponse(
     bool IsPinned,
     bool IsLocked,
     int? CategoryId,
-    string? CategoryName);
+    string? CategoryName,
+    IReadOnlyList<string> Tags);
 
 public record ThreadDetailResponse(
     int Id,
@@ -46,7 +60,8 @@ public record ThreadDetailResponse(
     bool IsPinned,
     bool IsLocked,
     int? CategoryId,
-    string? CategoryName);
+    string? CategoryName,
+    IReadOnlyList<string> Tags);
 
 /// <summary>Result wrapper so components handle failures without exceptions.</summary>
 public record ThreadOutcome<T>(bool Succeeded, T? Data, string? Error) where T : class

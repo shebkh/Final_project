@@ -21,6 +21,14 @@
                     Value="CategoryId" ValueChanged="OnFilterChangedAsync" />
 </div>
 
+@if (Tag is not null)
+{
+    <p class="thread-meta threads-tag-filter">
+        Showing threads tagged <span class="badge badge-tag">#@Tag</span>
+        <a class="btn btn-link-dark" href="@(CategoryId is null ? "/threads" : $"/threads?categoryId={CategoryId}")">clear</a>
+    </p>
+}
+
 @if (_loading)
 {
     <p>Loading threads…</p>
@@ -56,6 +64,10 @@ else
                     <a class="badge badge-category" href="@($"/threads?categoryId={thread.CategoryId}")">@thread.CategoryName</a>
                 }
                 <a class="thread-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
+                @foreach (var tag in thread.Tags)
+                {
+                    <a class="badge badge-tag" href="@($"/threads?tag={Uri.EscapeDataString(tag)}")">#@tag</a>
+                }
                 <p class="thread-excerpt">@thread.Excerpt</p>
                 <div class="thread-meta">
                     by <a class="author-link" href="@($"/users/{thread.AuthorId}")">@thread.AuthorUserName</a>

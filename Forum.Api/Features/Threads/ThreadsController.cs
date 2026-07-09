@@ -17,10 +17,11 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] int? categoryId = null,
+        [FromQuery] string? tag = null,
         CancellationToken ct = default)
     {
-        var items = await threadService.ListAsync(page, pageSize, categoryId, ct);
-        var total = await threadService.CountAsync(categoryId, ct);
+        var items = await threadService.ListAsync(page, pageSize, categoryId, tag, ct);
+        var total = await threadService.CountAsync(categoryId, tag, ct);
         Response.Headers["X-Total-Count"] = total.ToString();
         return Ok(items);
     }

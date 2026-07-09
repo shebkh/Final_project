@@ -20,6 +20,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ThreadVote> ThreadVotes => Set<ThreadVote>();
     public DbSet<PostVote> PostVotes => Set<PostVote>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<ThreadTag> ThreadTags => Set<ThreadTag>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,6 +90,38 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             // Category filtering on the thread list.
             entity.HasIndex(t => t.CategoryId);
+        });
+
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.ToTable("Tags");
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Name)
+                .IsRequired()
+                .HasMaxLength(25);
+
+            // Names are normalized before persistence; uniqueness doubles as the
+            // concurrency guard when parallel creates race on a new tag.
+            entity.HasIndex(t => t.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<ThreadTag>(entity =>
+        {
+            entity.ToTable("ThreadTags");
+            entity.HasKey(tt => new { tt.ThreadId, tt.TagId });
+
+            // Join rows die with either side. Cascade is safe here: the paths
+            // (Threads → ThreadTags and Tags → ThreadTags) never converge.
+            entity.HasOne(tt => tt.Thread)
+                .WithMany(t => t.ThreadTags)
+                .HasForeignKey(tt => tt.ThreadId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(tt => tt.Tag)
+                .WithMany()
+                .HasForeignKey(tt => tt.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Category>(entity =>

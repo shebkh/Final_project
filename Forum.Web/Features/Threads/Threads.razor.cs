@@ -9,25 +9,31 @@ public partial class Threads : ComponentBase
     [SupplyParameterFromQuery(Name = "categoryId")]
     public int? CategoryId { get; set; }
 
+    /// <summary>Active tag filter, round-tripped through the URL (?tag=).</summary>
+    [SupplyParameterFromQuery(Name = "tag")]
+    public string? Tag { get; set; }
+
     private IReadOnlyList<ThreadSummaryResponse> _threads = [];
     private bool _loading = true;
     private string? _error;
 
-    // Sentinel distinct from any real filter (including null) so the first
+    // Sentinels distinct from any real filter (including null) so the first
     // OnParametersSetAsync always loads.
     private int? _loadedCategoryId = int.MinValue;
+    private string? _loadedTag = "\0";
 
     protected override async Task OnParametersSetAsync()
     {
         // Fires on first render and again whenever the query string changes
-        // (same-page navigations from the filter or category badges).
-        if (_loadedCategoryId == CategoryId)
+        // (same-page navigations from the filter, category badges, or tag chips).
+        if (_loadedCategoryId == CategoryId && _loadedTag == Tag)
             return;
 
         _loadedCategoryId = CategoryId;
+        _loadedTag = Tag;
         _loading = true;
 
-        var outcome = await ThreadApi.ListAsync(categoryId: CategoryId);
+        var outcome = await ThreadApi.ListAsync(categoryId: CategoryId, tag: Tag);
         if (outcome.Succeeded)
         {
             _threads = outcome.Data!;
@@ -40,6 +46,13 @@ public partial class Threads : ComponentBase
         _loading = false;
     }
 
-    private void OnFilterChangedAsync(int? categoryId) =>
-        Navigation.NavigateTo(categoryId is null ? "/threads" : $"/threads?categoryId={categoryId}");
+    private void OnFilterChangedAsync(int? categoryId)
+    {
+        // Changing the category keeps an active tag filter, and vice versa.
+        var query = new List<string>(2);
+        if (categoryId is not null) query.Add($"categoryId={categoryId}");
+        if (!string.IsNullOrWhiteSpace(Tag)) query.Add($"tag={Uri.EscapeDataString(Tag)}");
+
+        Navigation.NavigateTo(query.Count == 0 ? "/threads" : $"/threads?{string.Join('&', query)}");
+    }
 }

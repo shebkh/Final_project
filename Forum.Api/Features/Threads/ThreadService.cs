@@ -11,15 +11,15 @@ public sealed class ThreadService(
     private const int ExcerptLength = 200;
 
     public async Task<IReadOnlyList<ThreadSummaryResponse>> ListAsync(
-        int page, int pageSize, int? categoryId = null, CancellationToken ct = default)
+        int page, int pageSize, int? categoryId = null, string? tag = null, CancellationToken ct = default)
     {
         var (skip, take) = Normalize(page, pageSize);
-        var threads = await repository.ListAsync(skip, take, categoryId, ct);
+        var threads = await repository.ListAsync(skip, take, categoryId, NormalizeTag(tag), ct);
         return threads.Select(ToSummary).ToList();
     }
 
-    public Task<int> CountAsync(int? categoryId = null, CancellationToken ct = default) =>
-        repository.CountAsync(categoryId, ct);
+    public Task<int> CountAsync(int? categoryId = null, string? tag = null, CancellationToken ct = default) =>
+        repository.CountAsync(categoryId, NormalizeTag(tag), ct);
 
     public async Task<ThreadResult<ThreadDetailResponse>> GetByIdAsync(int id, CancellationToken ct = default)
     {
@@ -48,7 +48,11 @@ public sealed class ThreadService(
 
         await repository.AddAsync(thread, ct);
 
-        // Re-read so the Author/Category navigations are populated for the response.
+        var tags = NormalizeTags(request.Tags);
+        if (tags.Count > 0)
+            await repository.SetTagsAsync(thread.Id, tags, ct);
+
+        // Re-read so the Author/Category/Tag navigations are populated for the response.
         var created = await repository.GetByIdAsync(thread.Id, ct);
         return ThreadResult<ThreadDetailResponse>.Success(ToDetail(created!));
     }
@@ -74,7 +78,10 @@ public sealed class ThreadService(
 
         await repository.SaveChangesAsync(ct);
 
-        // Re-read with the Author/Category navigations for the response projection.
+        // Tags replace the existing set (an omitted/empty list clears them).
+        await repository.SetTagsAsync(id, NormalizeTags(request.Tags), ct);
+
+        // Re-read with the Author/Category/Tag navigations for the response projection.
         var updated = await repository.GetByIdAsync(id, ct);
         return ThreadResult<ThreadDetailResponse>.Success(ToDetail(updated!));
     }
@@ -106,6 +113,25 @@ public sealed class ThreadService(
     private async Task<bool> CategoryIsValidAsync(int? categoryId, CancellationToken ct) =>
         categoryId is null || await categoryRepository.ExistsAsync(categoryId.Value, ct);
 
+    /// <summary>Trim → lowercase → inner spaces to hyphens → drop empties → dedupe (order kept).</summary>
+    private static IReadOnlyList<string> NormalizeTags(IReadOnlyList<string>? tags) =>
+        tags is null
+            ? []
+            : tags.Select(NormalizeTag)
+                  .OfType<string>()
+                  .Distinct()
+                  .ToList();
+
+    private static string? NormalizeTag(string? tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag))
+            return null;
+
+        var normalized = string.Join('-',
+            tag.Trim().ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        return normalized.Length == 0 ? null : normalized;
+    }
+
     private static (int skip, int take) Normalize(int page, int pageSize)
     {
         if (page < 1) page = 1;
@@ -116,6 +142,13 @@ public sealed class ThreadService(
 
     private static string BuildExcerpt(string body) =>
         body.Length <= ExcerptLength ? body : body[..ExcerptLength].TrimEnd() + "…";
+
+    private static IReadOnlyList<string> TagNames(ForumThread t) =>
+        t.ThreadTags
+            .Where(tt => tt.Tag is not null)
+            .Select(tt => tt.Tag!.Name)
+            .OrderBy(n => n)
+            .ToList();
 
     private static ThreadSummaryResponse ToSummary(ForumThread t) => new(
         t.Id,
@@ -128,7 +161,8 @@ public sealed class ThreadService(
         t.IsPinned,
         t.IsLocked,
         t.CategoryId,
-        t.Category?.Name);
+        t.Category?.Name,
+        TagNames(t));
 
     private static ThreadDetailResponse ToDetail(ForumThread t) => new(
         t.Id,
@@ -141,5 +175,6 @@ public sealed class ThreadService(
         t.IsPinned,
         t.IsLocked,
         t.CategoryId,
-        t.Category?.Name);
+        t.Category?.Name,
+        TagNames(t));
 }

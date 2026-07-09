@@ -38,7 +38,7 @@
                         }
                         else
                         {
-                            <div class="post-body">@post.Body</div>
+                            <MarkdownBody Content="@post.Body" CssClass="post-body" />
                             <div class="post-meta">
                                 by <a class="author-link" href="@($"/users/{post.AuthorId}")">@post.AuthorUserName</a>
                                 · @post.CreatedAtUtc.ToLocalTime().ToString("g")

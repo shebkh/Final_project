@@ -9,7 +9,7 @@
         {
             <label for="@($"body-{FormName}")">@Label</label>
         }
-        <InputTextArea id="@($"body-{FormName}")" class="form-control" rows="4" @bind-Value="Model.Body" />
+        <MarkdownEditor Id="@($"body-{FormName}")" Rows="4" @bind-Value="Model.Body" />
         <ValidationMessage For="() => Model.Body" />
     </div>
 

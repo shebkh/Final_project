@@ -44,6 +44,9 @@ public class ForumThread
     /// <summary>Navigation to the author. Loaded explicitly when needed.</summary>
     public User? Author { get; set; }
 
+    /// <summary>Join rows to this thread's tags. Loaded explicitly when needed.</summary>
+    public List<ThreadTag> ThreadTags { get; set; } = [];
+
     public DateTime CreatedAtUtc { get; set; }
 
     /// <summary>Set whenever the thread's content is edited; equals CreatedAtUtc on creation.</summary>

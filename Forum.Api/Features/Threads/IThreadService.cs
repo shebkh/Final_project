@@ -27,9 +27,9 @@ public readonly record struct ThreadResult<T>(T? Value, ThreadError Error) where
 public interface IThreadService
 {
     Task<IReadOnlyList<ThreadSummaryResponse>> ListAsync(
-        int page, int pageSize, int? categoryId = null, CancellationToken ct = default);
+        int page, int pageSize, int? categoryId = null, string? tag = null, CancellationToken ct = default);
 
-    Task<int> CountAsync(int? categoryId = null, CancellationToken ct = default);
+    Task<int> CountAsync(int? categoryId = null, string? tag = null, CancellationToken ct = default);
 
     Task<ThreadResult<ThreadDetailResponse>> GetByIdAsync(int id, CancellationToken ct = default);
 

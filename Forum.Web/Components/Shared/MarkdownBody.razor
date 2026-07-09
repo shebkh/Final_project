@@ -1,0 +1,13 @@
+@* Forum.Web/Components/Shared/MarkdownBody.razor *@
+@* Renders stored markdown as HTML. Embedded component (no @page/@rendermode);
+   safe against XSS because MarkdownRenderer's pipeline escapes raw HTML. *@
+@using Forum.Web.Common
+
+<div class="md-body @CssClass">@((MarkupString)MarkdownRenderer.ToHtml(Content))</div>
+
+@code {
+    [Parameter, EditorRequired] public string? Content { get; set; }
+
+    /// <summary>Extra class(es) so callers keep their existing hooks (thread-body / post-body).</summary>
+    [Parameter] public string? CssClass { get; set; }
+}

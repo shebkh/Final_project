@@ -35,6 +35,10 @@ else if (_thread is not null)
             {
                 <a class="badge badge-category" href="@($"/threads?categoryId={_thread.CategoryId}")">@_thread.CategoryName</a>
             }
+            @foreach (var tag in _thread.Tags)
+            {
+                <a class="badge badge-tag" href="@($"/threads?tag={Uri.EscapeDataString(tag)}")">#@tag</a>
+            }
             by <a class="author-link" href="@($"/users/{_thread.AuthorId}")">@_thread.AuthorUserName</a>
             · @_thread.CreatedAtUtc.ToLocalTime().ToString("g")
             @if (_thread.UpdatedAtUtc > _thread.CreatedAtUtc)
@@ -43,7 +47,7 @@ else if (_thread is not null)
             }
         </div>
 
-        <div class="thread-body">@_thread.Body</div>
+        <MarkdownBody Content="@_thread.Body" CssClass="thread-body" />
 
         <AuthorizeView Roles="Moderator">
             <div class="mod-bar">

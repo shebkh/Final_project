@@ -7,7 +7,7 @@ namespace Forum.Web.Features.Threads;
 public interface IThreadApiClient
 {
     Task<ThreadOutcome<IReadOnlyList<ThreadSummaryResponse>>> ListAsync(
-        int page = 1, int pageSize = 20, int? categoryId = null, CancellationToken ct = default);
+        int page = 1, int pageSize = 20, int? categoryId = null, string? tag = null, CancellationToken ct = default);
 
     Task<ThreadOutcome<ThreadDetailResponse>> GetByIdAsync(int id, CancellationToken ct = default);
 
@@ -26,13 +26,15 @@ public interface IThreadApiClient
 public sealed class ThreadApiClient(HttpClient http) : IThreadApiClient
 {
     public async Task<ThreadOutcome<IReadOnlyList<ThreadSummaryResponse>>> ListAsync(
-        int page = 1, int pageSize = 20, int? categoryId = null, CancellationToken ct = default)
+        int page = 1, int pageSize = 20, int? categoryId = null, string? tag = null, CancellationToken ct = default)
     {
         try
         {
             var url = $"api/threads?page={page}&pageSize={pageSize}";
             if (categoryId is not null)
                 url += $"&categoryId={categoryId}";
+            if (!string.IsNullOrWhiteSpace(tag))
+                url += $"&tag={Uri.EscapeDataString(tag)}";
 
             using var response = await http.GetAsync(url, ct);
             if (response.IsSuccessStatusCode)
@@ -59,11 +61,11 @@ public sealed class ThreadApiClient(HttpClient http) : IThreadApiClient
 
     public Task<ThreadOutcome<ThreadDetailResponse>> CreateAsync(ThreadEditModel model, CancellationToken ct = default) =>
         SendForDetailAsync(() => http.PostAsJsonAsync("api/threads",
-            new CreateThreadRequest(model.Title, model.Body, model.CategoryId), ct), ct);
+            new CreateThreadRequest(model.Title, model.Body, model.CategoryId, model.ParseTags()), ct), ct);
 
     public Task<ThreadOutcome<ThreadDetailResponse>> UpdateAsync(int id, ThreadEditModel model, CancellationToken ct = default) =>
         SendForDetailAsync(() => http.PutAsJsonAsync($"api/threads/{id}",
-            new UpdateThreadRequest(model.Title, model.Body, model.CategoryId), ct), ct);
+            new UpdateThreadRequest(model.Title, model.Body, model.CategoryId, model.ParseTags()), ct), ct);
 
     public async Task<ThreadActionOutcome> DeleteAsync(int id, CancellationToken ct = default)
     {
