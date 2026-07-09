@@ -9,7 +9,7 @@
         {
             <label for="@($"body-{FormName}")">@Label</label>
         }
-        <MarkdownEditor Id="@($"body-{FormName}")" Rows="4" @bind-Value="Model.Body" />
+        <MarkdownEditor @ref="_editor" Id="@($"body-{FormName}")" Rows="4" @bind-Value="Model.Body" />
         <ValidationMessage For="() => Model.Body" />
     </div>
 
@@ -38,6 +38,11 @@
     [Parameter] public string FormName { get; set; } = "post-form";
     [Parameter] public bool Busy { get; set; }
     [Parameter] public string? Error { get; set; }
+
+    private MarkdownEditor? _editor;
+
+    /// <summary>Focuses the body editor (used by quote-reply to jump the user into typing).</summary>
+    public void FocusBody() => _editor?.RequestFocus();
 
     private Task OnValidSubmitAsync() => OnSubmit.InvokeAsync();
 }

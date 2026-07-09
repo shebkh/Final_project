@@ -48,9 +48,14 @@
                                 }
                             </div>
                             <VoteBox Kind="VoteTargetKind.Post" TargetId="post.Id" />
-                            @if (CanEdit(post) || CanDelete(post))
+                            @if (CanQuote || CanEdit(post) || CanDelete(post))
                             {
                                 <div class="post-actions">
+                                    @if (CanQuote)
+                                    {
+                                        <button class="btn btn-link-dark" @onclick="() => QuoteReply(post)"
+                                                disabled="@IsRowBusy(post.Id)">Quote</button>
+                                    }
                                     @if (CanEdit(post) && !Locked)
                                     {
                                         <button class="btn btn-link-dark" @onclick="() => BeginEdit(post)"
@@ -83,7 +88,8 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="post-add">
-                        <PostForm Model="_newModel"
+                        <PostForm @ref="_addForm"
+                                  Model="_newModel"
                                   OnSubmit="AddReplyAsync"
                                   SubmitLabel="Post reply"
                                   Label="Add a reply"

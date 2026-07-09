@@ -138,4 +138,27 @@ public partial class PostList : ComponentBase
     /// <summary>The author may edit/delete their own reply; a moderator may delete any reply.</summary>
     private bool CanEdit(PostResponse post) => post.AuthorId == _currentUserId;
     private bool CanDelete(PostResponse post) => post.AuthorId == _currentUserId || _isModerator;
+
+    /// <summary>Anyone who can reply can quote: signed in and the thread not locked.</summary>
+    private bool CanQuote => _currentUserId is not null && !Locked;
+
+    private PostForm? _addForm;
+
+    /// <summary>
+    /// Prefills the add-reply editor with the quoted post as a markdown blockquote
+    /// (attribution line + each body line "> "-prefixed), appending if a draft
+    /// already exists, then focuses the editor.
+    /// </summary>
+    private void QuoteReply(PostResponse post)
+    {
+        var lines = post.Body.Replace("\r\n", "\n").Split('\n');
+        var quoted = string.Join("\n", lines.Select(l => "> " + l));
+        var block = $"> **{post.AuthorUserName}** wrote:\n{quoted}\n\n";
+
+        _newModel.Body = string.IsNullOrWhiteSpace(_newModel.Body)
+            ? block
+            : _newModel.Body.TrimEnd() + "\n\n" + block;
+
+        _addForm?.FocusBody();
+    }
 }

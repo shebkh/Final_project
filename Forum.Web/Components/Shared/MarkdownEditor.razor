@@ -28,7 +28,7 @@
     }
     else
     {
-        <InputTextArea id="@Id" class="form-control" rows="@Rows"
+        <InputTextArea @ref="_textArea" id="@Id" class="form-control" rows="@Rows"
                        Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" />
         <p class="form-hint md-hint">Markdown supported: **bold** _italic_ `code` &gt; quote - list</p>
     }
@@ -42,4 +42,27 @@
     [Parameter] public string? Id { get; set; }
 
     private bool _preview;
+    private InputTextArea? _textArea;
+    private bool _pendingFocus;
+
+    /// <summary>
+    /// Switches to the Write tab and focuses the textarea. Deferred to
+    /// OnAfterRenderAsync because the textarea isn't in the DOM while the
+    /// Preview tab is showing.
+    /// </summary>
+    public void RequestFocus()
+    {
+        _preview = false;
+        _pendingFocus = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingFocus && _textArea?.Element is { } element)
+        {
+            _pendingFocus = false;
+            await element.FocusAsync();
+        }
+    }
 }
