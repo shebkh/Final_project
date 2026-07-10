@@ -166,7 +166,9 @@ function setupWaveField(motionIntensity, reduced) {
 
   const lerp = (a, b, t) => Math.round(a + (b - a) * t);
   const amp = 26 * motionIntensity;
-  const baseAlpha = 0.5 * motionIntensity;
+  // Alpha scales with motionIntensity per the locked prop contract; the base
+  // was raised 0.5 → 0.85 after "colors too dim" feedback.
+  const baseAlpha = 0.85 * motionIntensity;
 
   const drawFrame = (time) => {
     ctx.clearRect(0, 0, w, h);
@@ -187,7 +189,7 @@ function setupWaveField(motionIntensity, reduced) {
       grad.addColorStop(0.5, `rgba(${r},${g},${b},${a})`);
       grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
       ctx.strokeStyle = grad;
-      ctx.lineWidth = 1.4;
+      ctx.lineWidth = 1.7;
 
       ctx.beginPath();
       const phase1 = time * 0.00018 + i * 0.7;

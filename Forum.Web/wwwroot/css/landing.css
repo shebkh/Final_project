@@ -16,9 +16,11 @@
   --tertiary:      #2dd4bf;   /* teal — background orb ONLY                    */
   --status-green:  #4ade80;
 
-  --text-primary:   #ececf4;
-  --text-secondary: #9fa0b5;
-  --text-muted:     #6b6c80;
+  /* Brightest of the LOCKED palette variants (ececf4/f1f1f8/eef0fa etc.) —
+     chosen after "colors too dim" feedback; hues unchanged. */
+  --text-primary:   #f1f1f8;
+  --text-secondary: #a6a7ba;
+  --text-muted:     #8a8b9e;
 
   --glass-blur: 18px;         /* live prop; overridden inline by [GlassBlur]   */
 
@@ -74,35 +76,35 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 .q-bg {
   z-index: 0;
   background:
-    radial-gradient(1200px 700px at 82% -6%,  rgba(74, 110, 224, 0.16), transparent 60%),
-    radial-gradient(900px 600px at 6% 34%,    rgba(122, 59, 224, 0.13), transparent 62%),
-    radial-gradient(1400px 900px at 50% 120%, rgba(74, 110, 224, 0.06), transparent 60%);
+    radial-gradient(1200px 700px at 82% -6%,  rgba(74, 110, 224, 0.26), transparent 60%),
+    radial-gradient(900px 600px at 6% 34%,    rgba(122, 59, 224, 0.20), transparent 62%),
+    radial-gradient(1400px 900px at 50% 120%, rgba(74, 110, 224, 0.10), transparent 60%);
 }
 
 /* 3. Three drifting blurred orbs. */
 .q-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(50px);
-  opacity: 0.55;
+  filter: blur(48px);
+  opacity: 0.8;
   will-change: transform;
 }
 .q-orb.a { width: 460px; height: 460px; top: -120px;  left: -80px;
-  background: radial-gradient(circle at 40% 40%, rgba(74, 110, 224, 0.55), transparent 70%);
+  background: radial-gradient(circle at 40% 40%, rgba(74, 110, 224, 0.72), transparent 70%);
   animation: qdrift1 34s ease-in-out infinite; }
 .q-orb.b { width: 520px; height: 520px; bottom: -160px; right: -120px;
-  background: radial-gradient(circle at 50% 50%, rgba(122, 59, 224, 0.5), transparent 70%);
+  background: radial-gradient(circle at 50% 50%, rgba(122, 59, 224, 0.66), transparent 70%);
   animation: qdrift2 40s ease-in-out infinite; }
 .q-orb.c { width: 380px; height: 380px; top: 42%; right: 6%;
-  background: radial-gradient(circle at 50% 50%, rgba(45, 212, 191, 0.32), transparent 70%);
+  background: radial-gradient(circle at 50% 50%, rgba(45, 212, 191, 0.42), transparent 70%);
   animation: qdrift1 26s ease-in-out infinite reverse; }
 
 /* 4. Grid overlay — 56px lines, radial-masked to fade below the hero. */
 .q-grid {
   z-index: 1;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 56px 56px;
   -webkit-mask-image: radial-gradient(1000px 620px at 50% 8%, #000 0%, transparent 72%);
           mask-image: radial-gradient(1000px 620px at 50% 8%, #000 0%, transparent 72%);
@@ -141,13 +143,13 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 .q-glass {
   position: relative;
   background: linear-gradient(150deg,
-    rgba(255, 255, 255, 0.10),
-    rgba(255, 255, 255, 0.015) 40%,
-    rgba(74, 96, 170, 0.07) 76%,
-    rgba(255, 255, 255, 0.04));
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.03) 40%,
+    rgba(74, 96, 170, 0.10) 76%,
+    rgba(255, 255, 255, 0.06));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
           backdrop-filter: blur(var(--glass-blur)) saturate(170%) url(#liquidGlass);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
     0 18px 50px -18px rgba(0, 0, 0, 0.7),
     inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
@@ -158,10 +160,10 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 /* Card variant: 135deg fill with a slightly stronger first stop. */
 .q-glass-card {
   background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.14),
-    rgba(255, 255, 255, 0.015) 40%,
-    rgba(74, 96, 170, 0.07) 76%,
-    rgba(255, 255, 255, 0.04));
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.03) 40%,
+    rgba(74, 96, 170, 0.10) 76%,
+    rgba(255, 255, 255, 0.06));
 }
 
 /* Interactive glass: hover lift + brighter border + accent glow. */
@@ -214,7 +216,7 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 .q-logo-mark {
   width: 26px; height: 26px; border-radius: 8px;
   background: linear-gradient(140deg, var(--accent), var(--accent-2));
-  box-shadow: 0 0 18px -2px rgba(74, 110, 224, 0.6);
+  box-shadow: 0 0 22px -2px rgba(74, 110, 224, 0.8);
   animation: qlogo 18s linear infinite;
 }
 
@@ -282,7 +284,7 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 }
 .q-hero h1 .q-accent-word {
   -webkit-text-fill-color: var(--accent); color: var(--accent);
-  text-shadow: 0 0 26px rgba(74, 110, 224, 0.45);
+  text-shadow: 0 0 30px rgba(74, 110, 224, 0.65);
 }
 
 .q-lead {
@@ -293,8 +295,9 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 .q-hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
 
 .q-scroll-cue {
-  display: inline-flex; align-items: center; gap: 8px;
-  margin-top: 46px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  margin-top: 56px;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.22em;
   text-transform: uppercase; color: var(--text-muted);
 }
@@ -308,9 +311,11 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 .q-mockup { border-radius: 22px; padding: 20px; overflow: hidden; }
 .q-mockup::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.14) 48%, transparent 62%);
-  transform: translateX(-120%);
-  animation: qsheen 6.5s ease-in-out infinite;
+  background: linear-gradient(115deg,
+    transparent 42%, rgba(255, 255, 255, 0.20) 50%, transparent 58%);
+  transform: translateX(-140%);
+  will-change: transform;
+  animation: qsheen 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 .q-mockup-head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -481,7 +486,7 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 @keyframes qcue     { 0%, 100% { transform: translateY(0); opacity: 0.35; } 50% { transform: translateY(6px); opacity: 1; } }
 @keyframes qdrift1  { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(40px, 30px); } }
 @keyframes qdrift2  { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-46px, -28px); } }
-@keyframes qsheen   { 0% { transform: translateX(-120%); } 22%, 100% { transform: translateX(120%); } }
+@keyframes qsheen   { 0% { transform: translateX(-140%); } 32%, 100% { transform: translateX(140%); } }
 @keyframes qlogo    { to { transform: rotate(360deg); } }
 @keyframes qnudge   { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
 @keyframes qbreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
