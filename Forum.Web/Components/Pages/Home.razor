@@ -1,17 +1,29 @@
 @* Forum.Web/Components/Pages/Home.razor *@
+@* Static SSR page — only static-safe Mud components (Href links, no handlers). *@
 @page "/home"
 
 <PageTitle>Home</PageTitle>
 
-<h1>Discussion Forum</h1>
+<div class="max-w-2xl">
+    <MudPaper Elevation="0" Class="forum-card pa-6">
+        <h1 class="forum-h1">Welcome to Quorum</h1>
 
-<AuthorizeView>
-    <Authorized>
-        <p>Welcome back, <strong>@context.User.Identity?.Name</strong>.</p>
-        <p><a href="/threads">Browse threads</a> or <a href="/threads/new">start a new one</a>.</p>
-    </Authorized>
-    <NotAuthorized>
-        <p>A place to start discussions and reply to others.</p>
-        <p><a href="/threads">Browse threads</a>, or <a href="/login">sign in</a> / <a href="/register">create an account</a> to post.</p>
-    </NotAuthorized>
-</AuthorizeView>
+        <AuthorizeView>
+            <Authorized>
+                <p class="forum-lead">Welcome back, <strong>@context.User.Identity?.Name</strong>.</p>
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/threads">Browse threads</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/threads/new">Start a thread</MudButton>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <p class="forum-lead">A place to start discussions and reply to others.</p>
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/threads">Browse threads</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/login">Sign in</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/register">Create an account</MudButton>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudPaper>
+</div>

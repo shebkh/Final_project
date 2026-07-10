@@ -7,27 +7,30 @@
 
 <PageTitle>Edit thread</PageTitle>
 
-<div class="auth-card auth-card-wide">
-    <h1>Edit thread</h1>
+<div class="max-w-3xl">
+    <MudPaper Elevation="0" Class="forum-card pa-6">
+        <h1 class="forum-h1">Edit thread</h1>
 
-    @if (_loading)
-    {
-        <p>Loading…</p>
-    }
-    else if (_loadError is not null)
-    {
-        <p class="auth-error" role="alert">@_loadError</p>
-        <a class="btn btn-link-dark" href="/threads">Back to threads</a>
-    }
-    else
-    {
-        <ThreadForm Model="_model"
-                    OnSubmit="HandleSubmitAsync"
-                    SubmitLabel="Save changes"
-                    CancelHref="@($"/threads/{Id}")"
-                    Busy="_busy"
-                    Error="_error" />
-    }
+        @if (_loading)
+        {
+            <MudSkeleton Width="60%" Height="42px" />
+            <MudSkeleton Width="100%" Height="120px" />
+        }
+        else if (_loadError is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4" role="alert">@_loadError</MudAlert>
+            <MudButton Variant="Variant.Text" Href="/threads">Back to threads</MudButton>
+        }
+        else
+        {
+            <ThreadForm Model="_model"
+                        OnSubmit="HandleSubmitAsync"
+                        SubmitLabel="Save changes"
+                        CancelHref="@($"/threads/{Id}")"
+                        Busy="_busy"
+                        Error="_error" />
+        }
+    </MudPaper>
 </div>
 
 @code {

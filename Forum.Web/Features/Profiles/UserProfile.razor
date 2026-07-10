@@ -7,113 +7,132 @@
 
 @if (_loading)
 {
-    <p>Loading profile…</p>
+    <MudPaper Elevation="0" Class="forum-card pa-6">
+        <MudSkeleton SkeletonType="SkeletonType.Circle" Width="56px" Height="56px" />
+        <MudSkeleton Width="30%" Height="32px" />
+        <MudSkeleton Width="50%" />
+    </MudPaper>
 }
 else if (_error is not null)
 {
-    <p class="auth-error" role="alert">@_error</p>
-    <a class="btn btn-link-dark" href="/threads">Back to threads</a>
+    <MudAlert Severity="Severity.Error" Class="mb-4" role="alert">@_error</MudAlert>
+    <MudButton Variant="Variant.Text" Href="/threads">Back to threads</MudButton>
 }
 else if (_profile is not null)
 {
-    <article class="profile-detail">
-        <h1 class="profile-name">@_profile.UserName</h1>
-        <div class="profile-stats">
-            <span class="profile-rep @RepClass" title="Reputation from votes on this user's threads and replies">
-                @_profile.Reputation
-            </span>
-            <span class="profile-rep-label">reputation</span>
-        </div>
-        <div class="profile-meta">
-            joined @_profile.JoinedAtUtc.ToLocalTime().ToString("d")
-            · @_profile.ThreadCount thread@(_profile.ThreadCount == 1 ? "" : "s")
-            · @_profile.PostCount repl@(_profile.PostCount == 1 ? "y" : "ies")
-        </div>
+    <article>
+        <MudPaper Elevation="0" Class="forum-card pa-6">
+            <div class="flex items-center gap-4">
+                <MudAvatar Color="Color.Primary" Size="Size.Large">
+                    @char.ToUpperInvariant(_profile.UserName[0])
+                </MudAvatar>
+                <div>
+                    <h1 class="forum-h1 !mb-1">@_profile.UserName</h1>
+                    <div class="flex items-center flex-wrap gap-2">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                                 Color="@(_profile.Reputation > 0 ? Color.Success : _profile.Reputation < 0 ? Color.Error : Color.Default)"
+                                 title="Reputation from votes on this user's threads and replies">
+                            @_profile.Reputation reputation
+                        </MudChip>
+                        <span class="forum-meta">
+                            joined @_profile.JoinedAtUtc.ToLocalTime().ToString("d")
+                            · @_profile.ThreadCount thread@(_profile.ThreadCount == 1 ? "" : "s")
+                            · @_profile.PostCount repl@(_profile.PostCount == 1 ? "y" : "ies")
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-        <div class="profile-tabs" role="tablist">
-            <button class="profile-tab @(_tab == ProfileTab.Threads ? "active" : "")"
-                    role="tab" @onclick="() => ShowTab(ProfileTab.Threads)">
-                Threads (@_profile.ThreadCount)
-            </button>
-            <button class="profile-tab @(_tab == ProfileTab.Posts ? "active" : "")"
-                    role="tab" @onclick="() => ShowTab(ProfileTab.Posts)">
-                Replies (@_profile.PostCount)
-            </button>
-        </div>
+            <div class="flex gap-2 mt-6 mb-4" role="tablist">
+                <MudButton Size="Size.Small" Color="Color.Primary" role="tab"
+                           Variant="@(_tab == ProfileTab.Threads ? Variant.Filled : Variant.Text)"
+                           OnClick="() => ShowTab(ProfileTab.Threads)">
+                    Threads (@_profile.ThreadCount)
+                </MudButton>
+                <MudButton Size="Size.Small" Color="Color.Primary" role="tab"
+                           Variant="@(_tab == ProfileTab.Posts ? Variant.Filled : Variant.Text)"
+                           OnClick="() => ShowTab(ProfileTab.Posts)">
+                    Replies (@_profile.PostCount)
+                </MudButton>
+            </div>
 
-        @if (_tab == ProfileTab.Threads)
-        {
-            <section class="profile-section">
-                @if (_threadsLoading)
-                {
-                    <p>Loading threads…</p>
-                }
-                else if (_threadsError is not null)
-                {
-                    <p class="auth-error" role="alert">@_threadsError</p>
-                }
-                else if (_threads.Count == 0)
-                {
-                    <p>@_profile.UserName hasn't started any threads yet.</p>
-                }
-                else
-                {
-                    <ul class="thread-list">
-                        @foreach (var thread in _threads)
-                        {
-                            <li class="thread-card" @key="thread.Id">
-                                <a class="thread-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
-                                <p class="thread-excerpt">@thread.Excerpt</p>
-                                <div class="thread-meta">
-                                    @thread.CreatedAtUtc.ToLocalTime().ToString("g")
-                                    @if (thread.UpdatedAtUtc > thread.CreatedAtUtc)
-                                    {
-                                        <span> · edited</span>
-                                    }
-                                </div>
-                            </li>
-                        }
-                    </ul>
-                }
-            </section>
-        }
-        else
-        {
-            <section class="profile-section">
-                @if (_postsLoading)
-                {
-                    <p>Loading replies…</p>
-                }
-                else if (_postsError is not null)
-                {
-                    <p class="auth-error" role="alert">@_postsError</p>
-                }
-                else if (_posts.Count == 0)
-                {
-                    <p>@_profile.UserName hasn't posted any replies yet.</p>
-                }
-                else
-                {
-                    <ul class="thread-list">
-                        @foreach (var post in _posts)
-                        {
-                            <li class="thread-card" @key="post.Id">
-                                <a class="thread-title" href="@($"/threads/{post.ThreadId}")">@post.ThreadTitle</a>
-                                <p class="thread-excerpt">@post.Excerpt</p>
-                                <div class="thread-meta">
-                                    @post.CreatedAtUtc.ToLocalTime().ToString("g")
-                                    @if (post.UpdatedAtUtc > post.CreatedAtUtc)
-                                    {
-                                        <span> · edited</span>
-                                    }
-                                </div>
-                            </li>
-                        }
-                    </ul>
-                }
-            </section>
-        }
+            @if (_tab == ProfileTab.Threads)
+            {
+                <section>
+                    @if (_threadsLoading)
+                    {
+                        <MudSkeleton Width="70%" Height="28px" />
+                        <MudSkeleton Width="40%" />
+                    }
+                    else if (_threadsError is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" Dense="true" role="alert">@_threadsError</MudAlert>
+                    }
+                    else if (_threads.Count == 0)
+                    {
+                        <p class="forum-empty">@_profile.UserName hasn't started any threads yet.</p>
+                    }
+                    else
+                    {
+                        <div class="flex flex-col gap-3">
+                            @foreach (var thread in _threads)
+                            {
+                                <MudPaper Elevation="0" Class="forum-card forum-card-hover pa-4" @key="thread.Id">
+                                    <a class="forum-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
+                                    <p class="forum-excerpt">@thread.Excerpt</p>
+                                    <div class="forum-meta">
+                                        @thread.CreatedAtUtc.ToLocalTime().ToString("g")
+                                        @if (thread.UpdatedAtUtc > thread.CreatedAtUtc)
+                                        {
+                                            <span> · edited</span>
+                                        }
+                                    </div>
+                                </MudPaper>
+                            }
+                        </div>
+                    }
+                </section>
+            }
+            else
+            {
+                <section>
+                    @if (_postsLoading)
+                    {
+                        <MudSkeleton Width="70%" Height="28px" />
+                        <MudSkeleton Width="40%" />
+                    }
+                    else if (_postsError is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" Dense="true" role="alert">@_postsError</MudAlert>
+                    }
+                    else if (_posts.Count == 0)
+                    {
+                        <p class="forum-empty">@_profile.UserName hasn't posted any replies yet.</p>
+                    }
+                    else
+                    {
+                        <div class="flex flex-col gap-3">
+                            @foreach (var post in _posts)
+                            {
+                                <MudPaper Elevation="0" Class="forum-card forum-card-hover pa-4" @key="post.Id">
+                                    <a class="forum-title" href="@($"/threads/{post.ThreadId}")">@post.ThreadTitle</a>
+                                    <p class="forum-excerpt">@post.Excerpt</p>
+                                    <div class="forum-meta">
+                                        @post.CreatedAtUtc.ToLocalTime().ToString("g")
+                                        @if (post.UpdatedAtUtc > post.CreatedAtUtc)
+                                        {
+                                            <span> · edited</span>
+                                        }
+                                    </div>
+                                </MudPaper>
+                            }
+                        </div>
+                    }
+                </section>
+            }
+        </MudPaper>
     </article>
 
-    <a class="btn btn-link-dark" href="/threads">← Back to threads</a>
+    <MudButton Variant="Variant.Text" Href="/threads" Class="mt-4"
+               StartIcon="@Icons.Material.Filled.ArrowBack">Back to threads</MudButton>
 }

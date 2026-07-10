@@ -5,76 +5,82 @@
 
 <PageTitle>Categories</PageTitle>
 
-<div class="threads-header">
-    <h1>Categories</h1>
-</div>
+<h1 class="forum-h1">Categories</h1>
 
 @if (_loading)
 {
-    <p>Loading categories…</p>
+    <div class="flex flex-col gap-3">
+        @for (var i = 0; i < 3; i++)
+        {
+            <MudPaper Elevation="0" Class="forum-card pa-4">
+                <MudSkeleton Width="35%" Height="28px" />
+                <MudSkeleton Width="20%" />
+            </MudPaper>
+        }
+    </div>
 }
 else if (_error is not null)
 {
-    <p class="auth-error" role="alert">@_error</p>
+    <MudAlert Severity="Severity.Error" role="alert">@_error</MudAlert>
 }
 else
 {
     @if (_categories.Count == 0)
     {
-        <p>No categories yet.</p>
+        <MudAlert Severity="Severity.Info">No categories yet.</MudAlert>
     }
     else
     {
-        <ul class="thread-list">
+        <div class="flex flex-col gap-3">
             @foreach (var root in Roots)
             {
-                <li class="thread-card">
+                <MudPaper Elevation="0" Class="forum-card pa-4" @key="root.Id">
                     @RenderCategory(root)
                     @foreach (var child in ChildrenOf(root.Id))
                     {
                         <div class="category-child">@RenderCategory(child)</div>
                     }
-                </li>
+                </MudPaper>
             }
-        </ul>
+        </div>
     }
 
     <AuthorizeView Roles="Moderator" Context="authContext">
-        <div class="mod-bar">
-            <span class="mod-bar-label">Moderator</span>
-            <span>Create, rename, and delete categories below.</span>
-        </div>
+        <MudPaper Elevation="0" Class="forum-card pa-4 mt-6">
+            <div class="flex items-center gap-2 mb-3">
+                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Moderator</MudChip>
+                <span class="forum-meta">Create, rename, and delete categories below.</span>
+            </div>
 
-        <div class="post-add">
-            <h3 class="post-heading">New category</h3>
+            <h3 class="forum-h3">New category</h3>
             <EditForm Model="_createModel" OnValidSubmit="CreateAsync" FormName="category-create">
                 <DataAnnotationsValidator />
-                <div class="form-group">
-                    <label for="new-name">Name</label>
-                    <InputText id="new-name" class="form-control" @bind-Value="_createModel.Name" />
-                    <ValidationMessage For="() => _createModel.Name" />
-                </div>
-                <div class="form-group">
-                    <label for="new-parent">Parent (optional — makes this a sub-category)</label>
-                    <InputSelect id="new-parent" class="form-control" @bind-Value="_createModel.ParentId">
-                        <option value="">(none — root category)</option>
+
+                <MudTextField Label="Name" @bind-Value="_createModel.Name"
+                              For="() => _createModel.Name" Variant="Variant.Outlined" Class="mb-4" />
+
+                <div class="max-w-xs mb-4">
+                    <MudSelect T="int?" Label="Parent (optional — makes this a sub-category)"
+                               @bind-Value="_createModel.ParentId" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudSelectItem T="int?" Value="@((int?)null)">(none — root category)</MudSelectItem>
                         @foreach (var root in Roots)
                         {
-                            <option value="@root.Id">@root.Name</option>
+                            <MudSelectItem T="int?" Value="@((int?)root.Id)">@root.Name</MudSelectItem>
                         }
-                    </InputSelect>
+                    </MudSelect>
                 </div>
+
                 @if (_createError is not null)
                 {
-                    <p class="auth-error" role="alert">@_createError</p>
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4" role="alert">@_createError</MudAlert>
                 }
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-inline" disabled="@_createBusy">
-                        @(_createBusy ? "Creating…" : "Create category")
-                    </button>
-                </div>
+
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_createBusy">
+                    @(_createBusy ? "Creating…" : "Create category")
+                </MudButton>
             </EditForm>
-        </div>
+        </MudPaper>
     </AuthorizeView>
 }
 
@@ -87,34 +93,40 @@ else
         {
             <EditForm Model="_editModel" OnValidSubmit="SaveEditAsync" FormName="@($"category-edit-{category.Id}")">
                 <DataAnnotationsValidator />
-                <div class="form-actions">
-                    <InputText class="form-control" @bind-Value="_editModel.Name" />
-                    <button type="submit" class="btn btn-primary btn-inline" disabled="@_editBusy">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <div class="w-64">
+                        <MudTextField @bind-Value="_editModel.Name" For="() => _editModel.Name"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </div>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                               Size="Size.Small" Disabled="_editBusy">
                         @(_editBusy ? "Saving…" : "Save")
-                    </button>
-                    <button type="button" class="btn btn-link-dark" @onclick="CancelEdit">Cancel</button>
+                    </MudButton>
+                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Text" Size="Size.Small"
+                               OnClick="CancelEdit">Cancel</MudButton>
                 </div>
-                <ValidationMessage For="() => _editModel.Name" />
                 @if (_editError is not null)
                 {
-                    <p class="auth-error" role="alert">@_editError</p>
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2" role="alert">@_editError</MudAlert>
                 }
             </EditForm>
         }
         else
         {
-            <a class="thread-title" href="@($"/threads?categoryId={category.Id}")">@category.Name</a>
-            <span class="thread-meta"> · @category.ThreadCount thread@(category.ThreadCount == 1 ? "" : "s")</span>
-            <AuthorizeView Roles="Moderator" Context="modContext">
-                <button class="btn btn-link-dark" @onclick="() => BeginEdit(category)">Rename</button>
-                <button class="btn btn-link-danger" @onclick="() => DeleteAsync(category)"
-                        disabled="@(_deleteBusyId == category.Id)">
-                    @(_deleteBusyId == category.Id ? "Deleting…" : "Delete")
-                </button>
-            </AuthorizeView>
+            <span class="inline-flex items-center gap-2 flex-wrap">
+                <a class="forum-title" href="@($"/threads?categoryId={category.Id}")">@category.Name</a>
+                <span class="forum-meta">· @category.ThreadCount thread@(category.ThreadCount == 1 ? "" : "s")</span>
+                <AuthorizeView Roles="Moderator" Context="modContext">
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => BeginEdit(category)">Rename</MudButton>
+                    <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error"
+                               OnClick="() => DeleteAsync(category)" Disabled="@(_deleteBusyId == category.Id)">
+                        @(_deleteBusyId == category.Id ? "Deleting…" : "Delete")
+                    </MudButton>
+                </AuthorizeView>
+            </span>
             @if (_actionErrorId == category.Id && _actionError is not null)
             {
-                <p class="auth-error" role="alert">@_actionError</p>
+                <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2" role="alert">@_actionError</MudAlert>
             }
         }
     };

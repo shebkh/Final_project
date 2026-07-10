@@ -7,14 +7,16 @@
 
 <PageTitle>Start a thread</PageTitle>
 
-<div class="auth-card auth-card-wide">
-    <h1>Start a thread</h1>
-    <ThreadForm Model="_model"
-                OnSubmit="HandleSubmitAsync"
-                SubmitLabel="Post thread"
-                CancelHref="/threads"
-                Busy="_busy"
-                Error="_error" />
+<div class="max-w-3xl">
+    <MudPaper Elevation="0" Class="forum-card pa-6">
+        <h1 class="forum-h1">Start a thread</h1>
+        <ThreadForm Model="_model"
+                    OnSubmit="HandleSubmitAsync"
+                    SubmitLabel="Post thread"
+                    CancelHref="/threads"
+                    Busy="_busy"
+                    Error="_error" />
+    </MudPaper>
 </div>
 
 @code {

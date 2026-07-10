@@ -6,52 +6,74 @@
 
 <PageTitle>Search</PageTitle>
 
-<div class="threads-header">
-    <h1>Search</h1>
-</div>
+<h1 class="forum-h1">Search</h1>
 
-<form class="search-bar" @onsubmit="SubmitAsync">
-    <input class="form-control search-input" type="search" placeholder="Search threads and replies…"
-           @bind="_input" @bind:event="oninput" />
-    <CategoryPicker Id="search-category" EmptyLabel="All categories" @bind-Value="_filterCategoryId" />
-    <button type="submit" class="btn btn-primary btn-inline" disabled="@_loading">Search</button>
+<form class="flex items-center flex-wrap gap-3 mb-6" @onsubmit="SubmitAsync">
+    <div class="flex-1 min-w-[220px]">
+        <MudTextField T="string" @bind-Value="_input" Immediate="true"
+                      Placeholder="Search threads and replies…"
+                      Variant="Variant.Outlined" Margin="Margin.Dense"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" />
+    </div>
+    <div class="w-56">
+        <CategoryPicker Id="search-category" EmptyLabel="All categories" @bind-Value="_filterCategoryId" />
+    </div>
+    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+               Disabled="_loading">Search</MudButton>
 </form>
 
 @if (_loading)
 {
-    <p>Searching…</p>
+    <div class="flex flex-col gap-3">
+        @for (var i = 0; i < 3; i++)
+        {
+            <MudPaper Elevation="0" Class="forum-card pa-4">
+                <MudSkeleton Width="45%" Height="28px" />
+                <MudSkeleton Width="90%" />
+            </MudPaper>
+        }
+    </div>
 }
 else if (_error is not null)
 {
-    <p class="auth-error" role="alert">@_error</p>
+    <MudAlert Severity="Severity.Error" role="alert">@_error</MudAlert>
 }
 else if (!_searched)
 {
-    <p class="post-signin">Enter a search term (at least 2 characters) to find threads and replies.</p>
+    <p class="forum-empty">Enter a search term (at least 2 characters) to find threads and replies.</p>
 }
 else if (_results.Count == 0)
 {
-    <p>No results for <strong>@Q</strong>@(CategoryId is null ? "" : " in this category").</p>
+    <MudAlert Severity="Severity.Info">
+        No results for <strong>@Q</strong>@(CategoryId is null ? "" : " in this category").
+    </MudAlert>
 }
 else
 {
-    <p class="thread-meta">@_total result@(_total == 1 ? "" : "s") for <strong>@Q</strong></p>
-    <ul class="thread-list">
+    <p class="forum-meta mb-3">@_total result@(_total == 1 ? "" : "s") for <strong>@Q</strong></p>
+    <div class="flex flex-col gap-3">
         @foreach (var hit in _results)
         {
-            <li class="thread-card">
-                <span class="badge badge-kind">@(hit.Kind == "Reply" ? "💬 Reply" : "🧵 Thread")</span>
-                @if (hit.CategoryName is not null)
-                {
-                    <a class="badge badge-category" href="@($"/threads?categoryId={hit.CategoryId}")">@hit.CategoryName</a>
-                }
-                <a class="thread-title" href="@($"/threads/{hit.ThreadId}")">@hit.ThreadTitle</a>
-                <p class="thread-excerpt">@hit.Snippet</p>
-                <div class="thread-meta">
-                    by <a class="author-link" href="@($"/users/{hit.AuthorId}")">@hit.AuthorUserName</a>
+            <MudPaper Elevation="0" Class="forum-card forum-card-hover pa-4">
+                <div class="flex items-center flex-wrap gap-2">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                             Color="@(hit.Kind == "Reply" ? Color.Info : Color.Tertiary)"
+                             Icon="@(hit.Kind == "Reply" ? Icons.Material.Filled.ChatBubbleOutline : Icons.Material.Filled.Forum)">
+                        @hit.Kind
+                    </MudChip>
+                    @if (hit.CategoryName is not null)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+                                 Href="@($"/threads?categoryId={hit.CategoryId}")">@hit.CategoryName</MudChip>
+                    }
+                    <a class="forum-title" href="@($"/threads/{hit.ThreadId}")">@hit.ThreadTitle</a>
+                </div>
+                <p class="forum-excerpt">@hit.Snippet</p>
+                <div class="forum-meta">
+                    by <a class="forum-author" href="@($"/users/{hit.AuthorId}")">@hit.AuthorUserName</a>
                     · @hit.CreatedAtUtc.ToLocalTime().ToString("g")
                 </div>
-            </li>
+            </MudPaper>
         }
-    </ul>
+    </div>
 }

@@ -8,12 +8,12 @@
 
 <AuthorizeView>
     <Authorized>
-        <span class="greeting">Hi, @context.User.Identity?.Name</span>
-        <button class="btn btn-link" @onclick="LogoutAsync">Sign out</button>
+        <span class="forum-greeting hidden sm:inline">Hi, @context.User.Identity?.Name</span>
+        <MudButton Variant="Variant.Text" Color="Color.Inherit" OnClick="LogoutAsync">Sign out</MudButton>
     </Authorized>
     <NotAuthorized>
-        <a href="/login">Sign in</a>
-        <a href="/register">Register</a>
+        <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/login">Sign in</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/register" Class="ml-2">Register</MudButton>
     </NotAuthorized>
 </AuthorizeView>
 

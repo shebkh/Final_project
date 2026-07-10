@@ -4,10 +4,10 @@
 <EditForm Model="Model" OnValidSubmit="OnValidSubmitAsync" FormName="@FormName">
     <DataAnnotationsValidator />
 
-    <div class="form-group">
+    <div class="mb-4">
         @if (!string.IsNullOrEmpty(Label))
         {
-            <label for="@($"body-{FormName}")">@Label</label>
+            <label class="forum-label" for="@($"body-{FormName}")">@Label</label>
         }
         <MarkdownEditor @ref="_editor" Id="@($"body-{FormName}")" Rows="4" @bind-Value="Model.Body" />
         <ValidationMessage For="() => Model.Body" />
@@ -15,16 +15,16 @@
 
     @if (Error is not null)
     {
-        <p class="auth-error" role="alert">@Error</p>
+        <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4" role="alert">@Error</MudAlert>
     }
 
-    <div class="form-actions">
-        <button type="submit" class="btn btn-primary btn-inline" disabled="@Busy">
+    <div class="flex items-center gap-2">
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="Busy">
             @(Busy ? $"{SubmitLabel}…" : SubmitLabel)
-        </button>
+        </MudButton>
         @if (OnCancel.HasDelegate)
         {
-            <button type="button" class="btn btn-link-dark" @onclick="OnCancel">Cancel</button>
+            <MudButton Variant="Variant.Text" OnClick="OnCancel">Cancel</MudButton>
         }
     </div>
 </EditForm>

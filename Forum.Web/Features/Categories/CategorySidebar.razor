@@ -1,0 +1,36 @@
+@* Forum.Web/Features/Categories/CategorySidebar.razor *@
+@* Category navigation for the layout sidebar. Embedded in the static
+   MainLayout, so it renders as static SSR: OnInitializedAsync runs once per
+   page load and every link is a plain anchor — no interactivity needed.
+   Navigation must never break a page, so load failures render nothing. *@
+@inject ICategoryApiClient CategoryApi
+
+<MudNavMenu Class="forum-sidebar">
+    <div class="forum-sidebar-title">Browse</div>
+    <MudNavLink Href="/threads" Match="NavLinkMatch.All">All threads</MudNavLink>
+    @foreach (var root in Roots)
+    {
+        <MudNavLink Href="@($"/threads?categoryId={root.Id}")">@root.Name</MudNavLink>
+        @foreach (var child in ChildrenOf(root.Id))
+        {
+            <MudNavLink Href="@($"/threads?categoryId={child.Id}")" Class="forum-sidebar-child">@child.Name</MudNavLink>
+        }
+    }
+</MudNavMenu>
+
+@code {
+    private IReadOnlyList<CategoryResponse> _categories = [];
+
+    private IEnumerable<CategoryResponse> Roots =>
+        _categories.Where(c => c.ParentId is null);
+
+    private IEnumerable<CategoryResponse> ChildrenOf(int parentId) =>
+        _categories.Where(c => c.ParentId == parentId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var outcome = await CategoryApi.ListAsync();
+        if (outcome.Succeeded)
+            _categories = outcome.Data!;
+    }
+}

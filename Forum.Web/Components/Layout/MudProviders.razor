@@ -1,0 +1,15 @@
+@* Forum.Web/Components/Layout/MudProviders.razor *@
+@* MudBlazor's providers must be interactive for popovers (MudSelect!), dialogs
+   and snackbars to work, but MainLayout must stay static (@Body cannot cross a
+   render-mode boundary). So the providers live in their own interactive island
+   — the same pattern as NavAuthControls. Every InteractiveServer island on a
+   page shares one circuit and its scoped services, so interactive pages find
+   the popover provider. Prerender stays ON so the theme's <style> is part of
+   the initial HTML (no unthemed flash). *@
+@rendermode InteractiveServer
+@using Forum.Web.Common
+
+<MudThemeProvider Theme="QuorumTheme.Theme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />

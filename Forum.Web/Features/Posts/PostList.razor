@@ -3,29 +3,37 @@
 @* Embedded in ThreadDetail; not a routable page, so no @page/@rendermode here —
    it inherits the parent page's interactive, non-prerendered render mode. *@
 
-<section class="post-section">
-    <h2 class="post-heading">Replies@(_count > 0 ? $" ({_count})" : "")</h2>
+<section class="mt-6">
+    <h2 class="forum-h2">Replies@(_count > 0 ? $" ({_count})" : "")</h2>
 
     @if (_loading)
     {
-        <p>Loading replies…</p>
+        <div class="flex flex-col gap-3">
+            @for (var i = 0; i < 2; i++)
+            {
+                <MudPaper Elevation="0" Class="forum-card pa-4">
+                    <MudSkeleton Width="85%" />
+                    <MudSkeleton Width="30%" />
+                </MudPaper>
+            }
+        </div>
     }
     else if (_loadError is not null)
     {
-        <p class="auth-error" role="alert">@_loadError</p>
+        <MudAlert Severity="Severity.Error" role="alert">@_loadError</MudAlert>
     }
     else
     {
         @if (_posts.Count == 0)
         {
-            <p class="post-empty">No replies yet.</p>
+            <p class="forum-empty">No replies yet.</p>
         }
         else
         {
-            <ul class="post-list">
+            <div class="flex flex-col gap-3">
                 @foreach (var post in _posts)
                 {
-                    <li class="post-card" @key="post.Id">
+                    <MudPaper Elevation="0" Class="forum-card pa-4" @key="post.Id">
                         @if (_editingId == post.Id)
                         {
                             <PostForm Model="_editModel"
@@ -39,55 +47,58 @@
                         else
                         {
                             <MarkdownBody Content="@post.Body" CssClass="post-body" />
-                            <div class="post-meta">
-                                by <a class="author-link" href="@($"/users/{post.AuthorId}")">@post.AuthorUserName</a>
+                            <div class="forum-meta mt-2">
+                                by <a class="forum-author" href="@($"/users/{post.AuthorId}")">@post.AuthorUserName</a>
                                 · @post.CreatedAtUtc.ToLocalTime().ToString("g")
                                 @if (post.UpdatedAtUtc > post.CreatedAtUtc)
                                 {
                                     <span> · edited</span>
                                 }
                             </div>
-                            <VoteBox Kind="VoteTargetKind.Post" TargetId="post.Id" />
-                            @if (CanQuote || CanEdit(post) || CanDelete(post))
-                            {
-                                <div class="post-actions">
-                                    @if (CanQuote)
-                                    {
-                                        <button class="btn btn-link-dark" @onclick="() => QuoteReply(post)"
-                                                disabled="@IsRowBusy(post.Id)">Quote</button>
-                                    }
-                                    @if (CanEdit(post) && !Locked)
-                                    {
-                                        <button class="btn btn-link-dark" @onclick="() => BeginEdit(post)"
-                                                disabled="@IsRowBusy(post.Id)">Edit</button>
-                                    }
-                                    @if (CanDelete(post))
-                                    {
-                                        <button class="btn btn-link-danger" @onclick="() => DeleteAsync(post.Id)"
-                                                disabled="@IsRowBusy(post.Id)">Delete</button>
-                                    }
-                                </div>
-                            }
+                            <div class="flex items-center flex-wrap gap-2 mt-2">
+                                <VoteBox Kind="VoteTargetKind.Post" TargetId="post.Id" />
+                                @if (CanQuote)
+                                {
+                                    <MudButton Variant="Variant.Text" Size="Size.Small"
+                                               OnClick="() => QuoteReply(post)"
+                                               Disabled="@IsRowBusy(post.Id)"
+                                               StartIcon="@Icons.Material.Filled.FormatQuote">Quote</MudButton>
+                                }
+                                @if (CanEdit(post) && !Locked)
+                                {
+                                    <MudButton Variant="Variant.Text" Size="Size.Small"
+                                               OnClick="() => BeginEdit(post)"
+                                               Disabled="@IsRowBusy(post.Id)">Edit</MudButton>
+                                }
+                                @if (CanDelete(post))
+                                {
+                                    <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error"
+                                               OnClick="() => DeleteAsync(post.Id)"
+                                               Disabled="@IsRowBusy(post.Id)">Delete</MudButton>
+                                }
+                            </div>
                         }
-                    </li>
+                    </MudPaper>
                 }
-            </ul>
+            </div>
         }
 
         @if (_actionError is not null)
         {
-            <p class="auth-error" role="alert">@_actionError</p>
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2" role="alert">@_actionError</MudAlert>
         }
 
         @if (Locked)
         {
-            <p class="post-locked" role="status">🔒 This thread is locked. New replies are disabled.</p>
+            <MudAlert Severity="Severity.Warning" Class="mt-4" Icon="@Icons.Material.Filled.Lock" role="status">
+                This thread is locked. New replies are disabled.
+            </MudAlert>
         }
         else
         {
             <AuthorizeView>
                 <Authorized>
-                    <div class="post-add">
+                    <MudPaper Elevation="0" Class="forum-card pa-4 mt-4">
                         <PostForm @ref="_addForm"
                                   Model="_newModel"
                                   OnSubmit="AddReplyAsync"
@@ -96,10 +107,10 @@
                                   FormName="add-reply"
                                   Busy="_addBusy"
                                   Error="_addError" />
-                    </div>
+                    </MudPaper>
                 </Authorized>
                 <NotAuthorized>
-                    <p class="post-signin"><a href="/login">Sign in</a> to reply.</p>
+                    <p class="forum-empty mt-4"><a href="/login">Sign in</a> to reply.</p>
                 </NotAuthorized>
             </AuthorizeView>
         }

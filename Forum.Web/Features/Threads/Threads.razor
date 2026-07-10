@@ -6,74 +6,91 @@
 
 <PageTitle>Threads</PageTitle>
 
-<div class="threads-header">
-    <h1>Threads</h1>
+<div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+    <h1 class="forum-h1 !mb-0">Threads</h1>
     <AuthorizeView>
         <Authorized>
-            <a class="btn btn-primary btn-inline" href="/threads/new">Start a thread</a>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/threads/new"
+                       StartIcon="@Icons.Material.Filled.Add">Start a thread</MudButton>
         </Authorized>
     </AuthorizeView>
 </div>
 
-<div class="form-group threads-filter">
-    <label for="thread-filter">Category</label>
-    <CategoryPicker Id="thread-filter" EmptyLabel="All categories"
+<div class="max-w-xs mb-4">
+    <CategoryPicker Id="thread-filter" Label="Category" EmptyLabel="All categories"
                     Value="CategoryId" ValueChanged="OnFilterChangedAsync" />
 </div>
 
 @if (Tag is not null)
 {
-    <p class="thread-meta threads-tag-filter">
-        Showing threads tagged <span class="badge badge-tag">#@Tag</span>
-        <a class="btn btn-link-dark" href="@(CategoryId is null ? "/threads" : $"/threads?categoryId={CategoryId}")">clear</a>
-    </p>
+    <div class="flex items-center flex-wrap gap-2 mb-4 forum-meta">
+        Showing threads tagged
+        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text">#@Tag</MudChip>
+        <MudButton Variant="Variant.Text" Size="Size.Small"
+                   Href="@(CategoryId is null ? "/threads" : $"/threads?categoryId={CategoryId}")">clear</MudButton>
+    </div>
 }
 
 @if (_loading)
 {
-    <p>Loading threads…</p>
+    <div class="flex flex-col gap-3">
+        @for (var i = 0; i < 3; i++)
+        {
+            <MudPaper Elevation="0" Class="forum-card pa-4">
+                <MudSkeleton Width="45%" Height="28px" />
+                <MudSkeleton Width="90%" />
+                <MudSkeleton Width="30%" />
+            </MudPaper>
+        }
+    </div>
 }
 else if (_error is not null)
 {
-    <p class="auth-error" role="alert">@_error</p>
+    <MudAlert Severity="Severity.Error" role="alert">@_error</MudAlert>
 }
 else if (_threads.Count == 0)
 {
-    <p>
+    <MudAlert Severity="Severity.Info">
         @(CategoryId is null
             ? "No threads yet. Be the first to start a discussion."
             : "No threads in this category yet.")
-    </p>
+    </MudAlert>
 }
 else
 {
-    <ul class="thread-list">
+    <div class="flex flex-col gap-3">
         @foreach (var thread in _threads)
         {
-            <li class="thread-card">
-                @if (thread.IsPinned)
-                {
-                    <span class="badge badge-pinned" title="Pinned by a moderator">📌 Pinned</span>
-                }
-                @if (thread.IsLocked)
-                {
-                    <span class="badge badge-locked" title="Locked by a moderator">🔒 Locked</span>
-                }
-                @if (thread.CategoryName is not null)
-                {
-                    <a class="badge badge-category" href="@($"/threads?categoryId={thread.CategoryId}")">@thread.CategoryName</a>
-                }
-                <a class="thread-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
-                @foreach (var tag in thread.Tags)
-                {
-                    <a class="badge badge-tag" href="@($"/threads?tag={Uri.EscapeDataString(tag)}")">#@tag</a>
-                }
-                <p class="thread-excerpt">@thread.Excerpt</p>
-                <div class="thread-meta">
-                    by <a class="author-link" href="@($"/users/{thread.AuthorId}")">@thread.AuthorUserName</a>
+            <MudPaper Elevation="0" Class="forum-card forum-card-hover pa-4" @key="thread.Id">
+                <div class="flex items-center flex-wrap gap-2">
+                    @if (thread.IsPinned)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined"
+                                 Icon="@Icons.Material.Filled.PushPin" title="Pinned by a moderator">Pinned</MudChip>
+                    }
+                    @if (thread.IsLocked)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined"
+                                 Icon="@Icons.Material.Filled.Lock" title="Locked by a moderator">Locked</MudChip>
+                    }
+                    @if (thread.CategoryName is not null)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+                                 Href="@($"/threads?categoryId={thread.CategoryId}")">@thread.CategoryName</MudChip>
+                    }
+                    <a class="forum-title" href="@($"/threads/{thread.Id}")">@thread.Title</a>
+                    @foreach (var tag in thread.Tags)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text"
+                                 Href="@($"/threads?tag={Uri.EscapeDataString(tag)}")">#@tag</MudChip>
+                    }
+                </div>
+                <p class="forum-excerpt">@thread.Excerpt</p>
+                <div class="forum-meta">
+                    by <a class="forum-author" href="@($"/users/{thread.AuthorId}")">@thread.AuthorUserName</a>
                     · @thread.CreatedAtUtc.ToLocalTime().ToString("g")
                 </div>
-            </li>
+            </MudPaper>
         }
-    </ul>
+    </div>
 }

@@ -7,12 +7,19 @@
     <base href="/" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["Forum.Web.styles.css"]" />
+    @* Tailwind Play CDN — layout utilities only for the forum chrome. Loaded
+       globally (not via HeadContent) because scripts injected during enhanced
+       navigation don't execute; preflight is disabled so its global reset can
+       never touch MudBlazor's styles or the landing page. *@
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } };</script>
     <ImportMap />
     <HeadOutlet />
 </head>
 
 <body>
     <Routes />
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 

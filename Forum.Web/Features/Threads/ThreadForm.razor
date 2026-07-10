@@ -4,41 +4,33 @@
 <EditForm Model="Model" OnValidSubmit="OnValidSubmitAsync" FormName="thread-form">
     <DataAnnotationsValidator />
 
-    <div class="form-group">
-        <label for="title">Title</label>
-        <InputText id="title" class="form-control" @bind-Value="Model.Title" />
-        <ValidationMessage For="() => Model.Title" />
-    </div>
+    <MudTextField Label="Title" @bind-Value="Model.Title" For="() => Model.Title"
+                  Variant="Variant.Outlined" Class="mb-4" />
 
-    <div class="form-group">
-        <label for="body">Body</label>
+    <div class="mb-4">
+        <label class="forum-label" for="body">Body</label>
         <MarkdownEditor Id="body" Rows="10" @bind-Value="Model.Body" />
         <ValidationMessage For="() => Model.Body" />
     </div>
 
-    <div class="form-group">
-        <label for="category">Category</label>
-        <CategoryPicker Id="category" @bind-Value="Model.CategoryId" />
+    <div class="max-w-xs mb-4">
+        <CategoryPicker Id="category" Label="Category" @bind-Value="Model.CategoryId" />
     </div>
 
-    <div class="form-group">
-        <label for="tags">Tags</label>
-        <InputText id="tags" class="form-control" @bind-Value="Model.TagsInput"
-                   placeholder="api, ef core, help" />
-        <ValidationMessage For="() => Model.TagsInput" />
-        <p class="form-hint">Comma-separated, up to 5 tags.</p>
-    </div>
+    <MudTextField Label="Tags" @bind-Value="Model.TagsInput" For="() => Model.TagsInput"
+                  Variant="Variant.Outlined" Placeholder="api, ef core, help"
+                  HelperText="Comma-separated, up to 5 tags." Class="mb-4" />
 
     @if (Error is not null)
     {
-        <p class="auth-error" role="alert">@Error</p>
+        <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4" role="alert">@Error</MudAlert>
     }
 
-    <div class="form-actions">
-        <button type="submit" class="btn btn-primary btn-inline" disabled="@Busy">
+    <div class="flex items-center gap-2">
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="Busy">
             @(Busy ? $"{SubmitLabel}…" : SubmitLabel)
-        </button>
-        <a class="btn btn-link-dark" href="@CancelHref">Cancel</a>
+        </MudButton>
+        <MudButton Variant="Variant.Text" Href="@CancelHref">Cancel</MudButton>
     </div>
 </EditForm>
 

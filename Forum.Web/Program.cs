@@ -9,12 +9,16 @@ using Forum.Web.Features.Posts;
 using Forum.Web.Features.Profiles;
 using Forum.Web.Features.Threads;
 using Forum.Web.Features.Votes;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Razor components (Blazor Server interactive).
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// MudBlazor (theme, popover, dialog, snackbar services).
+builder.Services.AddMudServices();
 
 // Browser localStorage for token persistence.
 builder.Services.AddBlazoredLocalStorage();

@@ -3,26 +3,29 @@
 @* Embedded in host pages (ThreadDetail, PostList); not routable, so no @page/@rendermode —
    inherits the host page's interactive, non-prerendered render mode. *@
 
-<div class="vote-box">
+<div class="inline-flex items-center gap-1">
     <AuthorizeView>
         <Authorized>
-            <button class="vote-btn @(_tally?.MyVote == 1 ? "vote-active-up" : "")"
-                    title="Up-vote" disabled="@_busy"
-                    @onclick="() => CastAsync(1)">▲</button>
+            <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small"
+                           Color="@(_tally?.MyVote == 1 ? Color.Primary : Color.Default)"
+                           title="Up-vote" Disabled="_busy" OnClick="() => CastAsync(1)" />
             <span class="vote-score @ScoreClass">@(_tally?.Score ?? 0)</span>
-            <button class="vote-btn @(_tally?.MyVote == -1 ? "vote-active-down" : "")"
-                    title="Down-vote" disabled="@_busy"
-                    @onclick="() => CastAsync(-1)">▼</button>
+            <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small"
+                           Color="@(_tally?.MyVote == -1 ? Color.Error : Color.Default)"
+                           title="Down-vote" Disabled="_busy" OnClick="() => CastAsync(-1)" />
         </Authorized>
         <NotAuthorized>
-            <span class="vote-btn vote-btn-readonly" title="Sign in to vote">▲</span>
+            <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Size="Size.Small"
+                     Class="vote-readonly" title="Sign in to vote" />
             <span class="vote-score @ScoreClass">@(_tally?.Score ?? 0)</span>
-            <span class="vote-btn vote-btn-readonly" title="Sign in to vote">▼</span>
+            <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Size="Size.Small"
+                     Class="vote-readonly" title="Sign in to vote" />
         </NotAuthorized>
     </AuthorizeView>
 
     @if (_error is not null)
     {
-        <span class="vote-error" role="alert" title="@_error">!</span>
+        <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Small" Color="Color.Error"
+                 role="alert" title="@_error" />
     }
 </div>

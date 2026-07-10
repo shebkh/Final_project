@@ -9,89 +9,111 @@
 
 @if (_loading)
 {
-    <p>Loading…</p>
+    <MudPaper Elevation="0" Class="forum-card pa-6">
+        <MudSkeleton Width="55%" Height="36px" />
+        <MudSkeleton Width="35%" />
+        <MudSkeleton Width="100%" Height="80px" />
+    </MudPaper>
 }
 else if (_error is not null)
 {
-    <p class="auth-error" role="alert">@_error</p>
-    <a class="btn btn-link-dark" href="/threads">Back to threads</a>
+    <MudAlert Severity="Severity.Error" Class="mb-4" role="alert">@_error</MudAlert>
+    <MudButton Variant="Variant.Text" Href="/threads">Back to threads</MudButton>
 }
 else if (_thread is not null)
 {
-    <article class="thread-detail">
-        <h1>
-            @if (_thread.IsPinned)
+    <article>
+        <MudPaper Elevation="0" Class="forum-card pa-6">
+            @if (_thread.IsPinned || _thread.IsLocked)
             {
-                <span class="badge badge-pinned" title="Pinned by a moderator">📌 Pinned</span>
+                <div class="flex items-center flex-wrap gap-2 mb-2">
+                    @if (_thread.IsPinned)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined"
+                                 Icon="@Icons.Material.Filled.PushPin" title="Pinned by a moderator">Pinned</MudChip>
+                    }
+                    @if (_thread.IsLocked)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined"
+                                 Icon="@Icons.Material.Filled.Lock" title="Locked by a moderator">Locked</MudChip>
+                    }
+                </div>
             }
-            @if (_thread.IsLocked)
-            {
-                <span class="badge badge-locked" title="Locked by a moderator">🔒 Locked</span>
-            }
-            @_thread.Title
-        </h1>
-        <div class="thread-meta">
-            @if (_thread.CategoryName is not null)
-            {
-                <a class="badge badge-category" href="@($"/threads?categoryId={_thread.CategoryId}")">@_thread.CategoryName</a>
-            }
-            @foreach (var tag in _thread.Tags)
-            {
-                <a class="badge badge-tag" href="@($"/threads?tag={Uri.EscapeDataString(tag)}")">#@tag</a>
-            }
-            by <a class="author-link" href="@($"/users/{_thread.AuthorId}")">@_thread.AuthorUserName</a>
-            · @_thread.CreatedAtUtc.ToLocalTime().ToString("g")
-            @if (_thread.UpdatedAtUtc > _thread.CreatedAtUtc)
-            {
-                <span> · edited @_thread.UpdatedAtUtc.ToLocalTime().ToString("g")</span>
-            }
-        </div>
-
-        <MarkdownBody Content="@_thread.Body" CssClass="thread-body" />
-
-        <AuthorizeView Roles="Moderator">
-            <div class="mod-bar">
-                <span class="mod-bar-label">Moderator</span>
-                <button class="btn btn-link-dark" @onclick="TogglePinAsync" disabled="@_modBusy">
-                    @(_thread.IsPinned ? "Unpin" : "Pin")
-                </button>
-                <button class="btn btn-link-dark" @onclick="ToggleLockAsync" disabled="@_modBusy">
-                    @(_thread.IsLocked ? "Unlock" : "Lock")
-                </button>
-                <CategoryPicker Id="mod-move-category" EmptyLabel="(no category)"
-                                @bind-Value="_moveCategoryId" Disabled="_modBusy" />
-                <button class="btn btn-link-dark" @onclick="MoveAsync"
-                        disabled="@(_modBusy || _moveCategoryId == _thread.CategoryId)">
-                    Move
-                </button>
-                @if (_modError is not null)
+            <h1 class="forum-h1">@_thread.Title</h1>
+            <div class="flex items-center flex-wrap gap-2 forum-meta mb-4">
+                @if (_thread.CategoryName is not null)
                 {
-                    <span class="auth-error" role="alert">@_modError</span>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+                             Href="@($"/threads?categoryId={_thread.CategoryId}")">@_thread.CategoryName</MudChip>
                 }
-            </div>
-        </AuthorizeView>
-
-        <VoteBox Kind="VoteTargetKind.Thread" TargetId="Id" />
-
-        @if (_isOwner || _isModerator)
-        {
-            <div class="form-actions">
-                @if (_isOwner)
+                @foreach (var tag in _thread.Tags)
                 {
-                    <a class="btn btn-primary btn-inline" href="@($"/threads/{Id}/edit")">Edit</a>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text"
+                             Href="@($"/threads?tag={Uri.EscapeDataString(tag)}")">#@tag</MudChip>
                 }
-                <button class="btn btn-danger" @onclick="DeleteAsync" disabled="@_deleting">
-                    @(_deleting ? "Deleting…" : "Delete")
-                </button>
+                <span>
+                    by <a class="forum-author" href="@($"/users/{_thread.AuthorId}")">@_thread.AuthorUserName</a>
+                    · @_thread.CreatedAtUtc.ToLocalTime().ToString("g")
+                    @if (_thread.UpdatedAtUtc > _thread.CreatedAtUtc)
+                    {
+                        <span> · edited @_thread.UpdatedAtUtc.ToLocalTime().ToString("g")</span>
+                    }
+                </span>
             </div>
-            @if (_actionError is not null)
+
+            <MarkdownBody Content="@_thread.Body" CssClass="thread-body" />
+
+            <AuthorizeView Roles="Moderator">
+                <MudPaper Outlined="true" Class="forum-modbar pa-3 mt-4">
+                    <div class="flex items-center flex-wrap gap-2">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Moderator</MudChip>
+                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="TogglePinAsync" Disabled="_modBusy">
+                            @(_thread.IsPinned ? "Unpin" : "Pin")
+                        </MudButton>
+                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ToggleLockAsync" Disabled="_modBusy">
+                            @(_thread.IsLocked ? "Unlock" : "Lock")
+                        </MudButton>
+                        <div class="w-52">
+                            <CategoryPicker Id="mod-move-category" EmptyLabel="(no category)"
+                                            @bind-Value="_moveCategoryId" Disabled="_modBusy" />
+                        </div>
+                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="MoveAsync"
+                                   Disabled="@(_modBusy || _moveCategoryId == _thread.CategoryId)">
+                            Move
+                        </MudButton>
+                        @if (_modError is not null)
+                        {
+                            <MudAlert Severity="Severity.Error" Dense="true" role="alert">@_modError</MudAlert>
+                        }
+                    </div>
+                </MudPaper>
+            </AuthorizeView>
+
+            <div class="mt-4">
+                <VoteBox Kind="VoteTargetKind.Thread" TargetId="Id" />
+            </div>
+
+            @if (_isOwner || _isModerator)
             {
-                <p class="auth-error" role="alert">@_actionError</p>
+                <div class="flex items-center gap-2 mt-4">
+                    @if (_isOwner)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@($"/threads/{Id}/edit")">Edit</MudButton>
+                    }
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteAsync" Disabled="_deleting">
+                        @(_deleting ? "Deleting…" : "Delete")
+                    </MudButton>
+                </div>
+                @if (_actionError is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2" role="alert">@_actionError</MudAlert>
+                }
             }
-        }
+        </MudPaper>
     </article>
 
     <PostList ThreadId="Id" Locked="_thread.IsLocked" />
 
-    <a class="btn btn-link-dark" href="/threads">← Back to threads</a>
+    <MudButton Variant="Variant.Text" Href="/threads" Class="mt-4"
+               StartIcon="@Icons.Material.Filled.ArrowBack">Back to threads</MudButton>
 }

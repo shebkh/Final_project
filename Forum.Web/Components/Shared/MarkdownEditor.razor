@@ -7,10 +7,12 @@
 
 <div class="md-editor">
     <div class="md-tabs" role="tablist">
-        <button type="button" role="tab" class="md-tab @(_preview ? "" : "active")"
-                @onclick="() => _preview = false">Write</button>
-        <button type="button" role="tab" class="md-tab @(_preview ? "active" : "")"
-                @onclick="() => _preview = true">Preview</button>
+        <MudButton ButtonType="ButtonType.Button" Size="Size.Small"
+                   Variant="@(_preview ? Variant.Text : Variant.Filled)" Color="Color.Primary"
+                   role="tab" OnClick="() => _preview = false">Write</MudButton>
+        <MudButton ButtonType="ButtonType.Button" Size="Size.Small"
+                   Variant="@(_preview ? Variant.Filled : Variant.Text)" Color="Color.Primary"
+                   role="tab" OnClick="() => _preview = true">Preview</MudButton>
     </div>
 
     @if (_preview)
@@ -18,7 +20,7 @@
         <div class="md-preview">
             @if (string.IsNullOrWhiteSpace(Value))
             {
-                <p class="post-empty">Nothing to preview yet.</p>
+                <p class="forum-empty">Nothing to preview yet.</p>
             }
             else
             {
@@ -28,9 +30,9 @@
     }
     else
     {
-        <InputTextArea @ref="_textArea" id="@Id" class="form-control" rows="@Rows"
+        <InputTextArea @ref="_textArea" id="@Id" class="md-textarea" rows="@Rows"
                        Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" />
-        <p class="form-hint md-hint">Markdown supported: **bold** _italic_ `code` &gt; quote - list</p>
+        <p class="forum-hint md-hint">Markdown supported: **bold** _italic_ `code` &gt; quote - list</p>
     }
 </div>
 

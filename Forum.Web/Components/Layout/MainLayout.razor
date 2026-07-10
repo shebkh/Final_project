@@ -1,23 +1,47 @@
 @* Forum.Web/Components/Layout/MainLayout.razor *@
 @* Static SSR layout. A layout must NOT declare @rendermode: @Body is a
    RenderFragment and cannot be serialized across a render-mode boundary.
-   Each page owns its own render mode; the interactive auth controls live in
-   <NavAuthControls>, which declares its own. *@
+   Interactivity lives in embedded islands: <MudProviders> (theme/popover/
+   dialog/snackbar) and <NavAuthControls> (sign-out). Every Mud component used
+   directly in this layout is static-safe (markup + CSS only). *@
 @inherits LayoutComponentBase
 
-<header class="top-bar">
-    <a class="brand" href="/">Discussion Forum</a>
-    <nav class="top-nav">
-        <a href="/threads">Threads</a>
-        <a href="/categories">Categories</a>
-        <a href="/search">Search</a>
-        <NavAuthControls />
-    </nav>
-</header>
+<HeadContent>
+    @* Forum-only assets — the landing page uses LandingLayout and never loads
+       these. (The Tailwind script is global in App.razor: scripts injected by
+       enhanced navigation don't execute, links like these do.) *@
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
+</HeadContent>
 
-<main class="content">
-    @Body
-</main>
+<MudProviders />
+
+<MudLayout>
+    <MudAppBar Fixed="true" Elevation="0" Class="forum-appbar">
+        <a class="forum-brand" href="/">Quorum</a>
+        <nav class="forum-nav hidden sm:flex">
+            <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/threads">Threads</MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/categories">Categories</MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/search">Search</MudButton>
+        </nav>
+        <MudSpacer />
+        <NavAuthControls />
+    </MudAppBar>
+
+    <MudMainContent>
+        <div class="mx-auto max-w-6xl w-full px-4 py-6 lg:flex lg:gap-8">
+            <aside class="hidden lg:block w-56 shrink-0">
+                <CategorySidebar />
+            </aside>
+            <main class="forum-main flex-1 min-w-0">
+                @Body
+            </main>
+        </div>
+    </MudMainContent>
+</MudLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
