@@ -29,7 +29,11 @@ public interface IThreadRepository
     /// <summary>Persists pending changes to a tracked entity returned by GetForUpdateAsync.</summary>
     Task SaveChangesAsync(CancellationToken ct = default);
 
-    /// <summary>Deletes a tracked entity returned by GetForUpdateAsync.</summary>
+    /// <summary>
+    /// Deletes a tracked entity returned by GetForUpdateAsync, together with its
+    /// dependents (replies and votes) in one transaction — their FKs are Restrict,
+    /// so the thread row alone can never be removed while they exist.
+    /// </summary>
     Task DeleteAsync(ForumThread thread, CancellationToken ct = default);
 
     /// <summary>

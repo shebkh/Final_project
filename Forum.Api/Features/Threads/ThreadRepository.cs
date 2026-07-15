@@ -48,8 +48,36 @@ public sealed class ThreadRepository(AppDbContext db) : IThreadRepository
 
     public async Task DeleteAsync(ForumThread thread, CancellationToken ct = default)
     {
+        // Posts and votes reference the thread with Restrict FKs, so dependents must
+        // go first — PostVotes → Posts → ThreadVotes — inside one transaction so a
+        // failure can't leave the thread stripped of its replies but still alive.
+        // (ThreadTags cascade with the thread row itself.)
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+
+        await db.PostVotes
+            .Where(v => v.Post!.ThreadId == thread.Id)
+            .ExecuteDeleteAsync(ct);
+        await db.Posts
+            .Where(p => p.ThreadId == thread.Id)
+            .ExecuteDeleteAsync(ct);
+        await db.ThreadVotes
+            .Where(v => v.ThreadId == thread.Id)
+            .ExecuteDeleteAsync(ct);
+
         db.Threads.Remove(thread);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // A concurrent request already deleted the thread row, so the DELETE
+            // affected 0 rows. The desired end-state — the thread is gone — is
+            // already true, so treat it as success instead of a 500.
+            db.Entry(thread).State = EntityState.Detached;
+        }
+
+        await tx.CommitAsync(ct);
     }
 
     public async Task SetTagsAsync(int threadId, IReadOnlyList<string> names, CancellationToken ct = default)
