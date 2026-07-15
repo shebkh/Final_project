@@ -5,6 +5,7 @@ using Forum.Api.Data;
 using Forum.Api.Features.Auth;
 using Forum.Api.Features.Categories;
 using Forum.Api.Features.Moderation;
+using Forum.Api.Features.Notifications;
 using Forum.Api.Features.Posts;
 using Forum.Api.Features.Profiles;
 using Forum.Api.Features.Search;
@@ -40,6 +41,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
             ClockSkew = TimeSpan.FromSeconds(30)
         };
+
+        // SignalR WebSocket connections cannot carry an Authorization header, so
+        // hub clients pass the JWT as ?access_token= — accept it on hub paths only.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 builder.Services.AddAuthorization();
 
@@ -74,6 +91,7 @@ builder.Services.AddProfilesFeature();
 builder.Services.AddModerationFeature();
 builder.Services.AddCategoriesFeature();
 builder.Services.AddSearchFeature();
+builder.Services.AddNotificationsFeature();
 
 var app = builder.Build();
 
@@ -88,5 +106,6 @@ app.UseCors(CorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapNotificationsFeature();
 
 app.Run();

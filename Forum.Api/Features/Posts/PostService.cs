@@ -1,7 +1,11 @@
 // Forum.Api/Features/Posts/PostService.cs
+using Forum.Api.Features.Notifications;
+
 namespace Forum.Api.Features.Posts;
 
-public sealed class PostService(IPostRepository repository) : IPostService
+public sealed class PostService(
+    IPostRepository repository,
+    INotificationService notifications) : IPostService
 {
     private const int MaxPageSize = 50;
 
@@ -29,10 +33,10 @@ public sealed class PostService(IPostRepository repository) : IPostService
     public async Task<PostResult<PostResponse>> CreateAsync(
         int threadId, CreatePostRequest request, int authorId, CancellationToken ct = default)
     {
-        var (exists, isLocked) = await repository.GetThreadLockStateAsync(threadId, ct);
-        if (!exists)
+        var thread = await repository.GetThreadInfoAsync(threadId, ct);
+        if (thread is not ThreadInfo info)
             return PostResult<PostResponse>.Fail(PostError.ThreadNotFound);
-        if (isLocked)
+        if (info.IsLocked)
             return PostResult<PostResponse>.Fail(PostError.ThreadLocked);
 
         var now = DateTime.UtcNow;
@@ -49,6 +53,12 @@ public sealed class PostService(IPostRepository repository) : IPostService
 
         // Re-read so the Author navigation is populated for the response.
         var created = await repository.GetByIdAsync(post.Id, ct);
+
+        // Real-time nudge for the thread author — skipped when replying to yourself.
+        if (info.AuthorId != authorId)
+            await notifications.NotifyThreadRepliedAsync(
+                info.AuthorId, created!.Author?.UserName ?? "Someone", threadId, info.Title, ct);
+
         return PostResult<PostResponse>.Success(ToResponse(created!));
     }
 

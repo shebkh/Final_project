@@ -13,3 +13,7 @@
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+
+@* Per-circuit SignalR listener; lives here so every forum page (this island is
+   in MainLayout) gets real-time toasts without its own wiring. *@
+<NotificationToaster />

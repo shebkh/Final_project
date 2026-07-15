@@ -12,6 +12,17 @@ public sealed class VoteRepository(AppDbContext db) : IVoteRepository
     public Task<bool> ThreadExistsAsync(int threadId, CancellationToken ct = default) =>
         db.Threads.AnyAsync(t => t.Id == threadId, ct);
 
+    public async Task<VoteTarget?> GetThreadTargetAsync(int threadId, CancellationToken ct = default)
+    {
+        var row = await db.Threads
+            .AsNoTracking()
+            .Where(t => t.Id == threadId)
+            .Select(t => new { t.AuthorId, t.Id, t.Title })
+            .FirstOrDefaultAsync(ct);
+
+        return row is null ? null : new VoteTarget(row.AuthorId, row.Id, row.Title);
+    }
+
     // Tracked (no Include) so upsert mutates only the ThreadVotes row.
     public Task<ThreadVote?> GetThreadVoteAsync(int threadId, int userId, CancellationToken ct = default) =>
         db.ThreadVotes.FirstOrDefaultAsync(v => v.ThreadId == threadId && v.UserId == userId, ct);
@@ -56,6 +67,17 @@ public sealed class VoteRepository(AppDbContext db) : IVoteRepository
 
     public Task<bool> PostExistsAsync(int postId, CancellationToken ct = default) =>
         db.Posts.AnyAsync(p => p.Id == postId, ct);
+
+    public async Task<VoteTarget?> GetPostTargetAsync(int postId, CancellationToken ct = default)
+    {
+        var row = await db.Posts
+            .AsNoTracking()
+            .Where(p => p.Id == postId)
+            .Select(p => new { p.AuthorId, p.ThreadId, ThreadTitle = p.Thread!.Title })
+            .FirstOrDefaultAsync(ct);
+
+        return row is null ? null : new VoteTarget(row.AuthorId, row.ThreadId, row.ThreadTitle);
+    }
 
     public Task<PostVote?> GetPostVoteAsync(int postId, int userId, CancellationToken ct = default) =>
         db.PostVotes.FirstOrDefaultAsync(v => v.PostId == postId && v.UserId == userId, ct);

@@ -1,0 +1,35 @@
+@* Forum.Web/Features/Notifications/NotificationToaster.razor
+   Invisible listener living inside the MudProviders interactive island (inherits
+   its render mode — no @page/@rendermode here). Starts the per-circuit SignalR
+   connection after first interactive render (the JWT needs localStorage → JS)
+   and toasts every pushed notification; clicking a toast navigates to it. *@
+@implements IDisposable
+@inject ISignalRService SignalR
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        SignalR.NotificationReceived += OnNotification;
+        await SignalR.EnsureStartedAsync();
+    }
+
+    // Hub callbacks arrive on a background thread — hop onto the renderer's
+    // sync context before touching UI services.
+    private void OnNotification(NotificationMessage message) =>
+        _ = InvokeAsync(() =>
+            Snackbar.Add(message.Text, Severity.Info, config =>
+            {
+                config.OnClick = _ =>
+                {
+                    Navigation.NavigateTo(message.Url);
+                    return Task.CompletedTask;
+                };
+            }));
+
+    public void Dispose() => SignalR.NotificationReceived -= OnNotification;
+}

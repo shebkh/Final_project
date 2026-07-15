@@ -1,10 +1,19 @@
 // Forum.Api/Features/Posts/IPostRepository.cs
 namespace Forum.Api.Features.Posts;
 
+/// <summary>Thread facts the Posts slice needs: reply gating + reply notifications.</summary>
+public readonly record struct ThreadInfo(int AuthorId, string Title, bool IsLocked);
+
 public interface IPostRepository
 {
     /// <summary>True if the parent thread exists (used to 404 on create).</summary>
     Task<bool> ThreadExistsAsync(int threadId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Author, title and lock state of a thread in one round-trip — the create path
+    /// needs all three (lock check + notifying the author). Null when missing.
+    /// </summary>
+    Task<ThreadInfo?> GetThreadInfoAsync(int threadId, CancellationToken ct = default);
 
     /// <summary>
     /// The lock state of a thread: (exists, isLocked). exists is false when the thread is

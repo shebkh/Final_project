@@ -1,4 +1,5 @@
 // Forum.Api/Features/Votes/VoteService.cs
+using Forum.Api.Features.Notifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace Forum.Api.Features.Votes;
@@ -9,7 +10,9 @@ namespace Forum.Api.Features.Votes;
 /// There is no ownership restriction — any signed-in user may vote on any target
 /// (including their own content), matching typical forum behaviour.
 /// </summary>
-public sealed class VoteService(IVoteRepository repository) : IVoteService
+public sealed class VoteService(
+    IVoteRepository repository,
+    INotificationService notifications) : IVoteService
 {
     // ===== Threads =====
 
@@ -30,11 +33,17 @@ public sealed class VoteService(IVoteRepository repository) : IVoteService
     public async Task<VoteResult<VoteTallyResponse>> CastThreadVoteAsync(
         int threadId, int value, int currentUserId, CancellationToken ct = default)
     {
-        if (!await repository.ThreadExistsAsync(threadId, ct))
+        if (await repository.GetThreadTargetAsync(threadId, ct) is not VoteTarget target)
             return VoteResult<VoteTallyResponse>.Fail(VoteError.NotFound);
 
         var existing = await repository.GetThreadVoteAsync(threadId, currentUserId, ct);
         var myVote = await ApplyThreadVoteAsync(threadId, currentUserId, (short)value, existing, ct);
+
+        // Notify the thread author about a standing vote (new or switched, not a
+        // toggle-off) — never about their own vote on their own thread.
+        if (myVote != 0 && target.AuthorId != currentUserId)
+            await notifications.NotifyThreadVotedAsync(
+                target.AuthorId, myVote, target.ThreadId, target.ThreadTitle, ct);
 
         return VoteResult<VoteTallyResponse>.Success(
             await BuildTallyAsync(repository.CountThreadVotesAsync(threadId, ct), myVote));
@@ -130,11 +139,17 @@ public sealed class VoteService(IVoteRepository repository) : IVoteService
     public async Task<VoteResult<VoteTallyResponse>> CastPostVoteAsync(
         int postId, int value, int currentUserId, CancellationToken ct = default)
     {
-        if (!await repository.PostExistsAsync(postId, ct))
+        if (await repository.GetPostTargetAsync(postId, ct) is not VoteTarget target)
             return VoteResult<VoteTallyResponse>.Fail(VoteError.NotFound);
 
         var existing = await repository.GetPostVoteAsync(postId, currentUserId, ct);
         var myVote = await ApplyPostVoteAsync(postId, currentUserId, (short)value, existing, ct);
+
+        // Notify the reply author about a standing vote (new or switched, not a
+        // toggle-off) — never about their own vote on their own reply.
+        if (myVote != 0 && target.AuthorId != currentUserId)
+            await notifications.NotifyPostVotedAsync(
+                target.AuthorId, myVote, target.ThreadId, target.ThreadTitle, ct);
 
         return VoteResult<VoteTallyResponse>.Success(
             await BuildTallyAsync(repository.CountPostVotesAsync(postId, ct), myVote));

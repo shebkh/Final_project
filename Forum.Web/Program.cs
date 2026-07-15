@@ -5,6 +5,7 @@ using Forum.Web.Features.Auth;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Forum.Web.Features.Categories;
 using Forum.Web.Features.Moderation;
+using Forum.Web.Features.Notifications;
 using Forum.Web.Features.Search;
 using Forum.Web.Features.Posts;
 using Forum.Web.Features.Profiles;
@@ -62,6 +63,9 @@ builder.Services.AddCategoriesFeature(builder.Configuration);
 
 // Search feature slice (typed HttpClient; anonymous keyword/category search).
 builder.Services.AddSearchFeature(builder.Configuration);
+
+// Notifications feature slice (per-circuit SignalR connection to the API hub).
+builder.Services.AddNotificationsFeature(builder.Configuration);
 
 var app = builder.Build();
 

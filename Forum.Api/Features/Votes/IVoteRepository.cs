@@ -7,10 +7,20 @@ public readonly record struct VoteCounts(int UpVotes, int DownVotes)
     public int Score => UpVotes - DownVotes;
 }
 
+/// <summary>
+/// Who to notify about a vote and where the notification should link: the
+/// target's author plus the surrounding thread (a post's target thread is its
+/// parent; a thread's is itself).
+/// </summary>
+public readonly record struct VoteTarget(int AuthorId, int ThreadId, string ThreadTitle);
+
 public interface IVoteRepository
 {
     // --- Thread votes ---
     Task<bool> ThreadExistsAsync(int threadId, CancellationToken ct = default);
+
+    /// <summary>Author + thread info for a vote on a thread. Null when the thread is missing.</summary>
+    Task<VoteTarget?> GetThreadTargetAsync(int threadId, CancellationToken ct = default);
 
     /// <summary>Tracked fetch of the caller's existing thread vote (for upsert). Null if none.</summary>
     Task<ThreadVote?> GetThreadVoteAsync(int threadId, int userId, CancellationToken ct = default);
@@ -26,6 +36,9 @@ public interface IVoteRepository
 
     // --- Post votes ---
     Task<bool> PostExistsAsync(int postId, CancellationToken ct = default);
+
+    /// <summary>Author + parent-thread info for a vote on a post. Null when the post is missing.</summary>
+    Task<VoteTarget?> GetPostTargetAsync(int postId, CancellationToken ct = default);
 
     /// <summary>Tracked fetch of the caller's existing post vote (for upsert). Null if none.</summary>
     Task<PostVote?> GetPostVoteAsync(int postId, int userId, CancellationToken ct = default);
