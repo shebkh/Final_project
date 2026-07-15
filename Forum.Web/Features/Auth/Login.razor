@@ -41,6 +41,9 @@
     private string? _error;
     private bool _busy;
 
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
     private async Task HandleSubmitAsync()
     {
         _busy = true;
@@ -50,8 +53,19 @@
         _busy = false;
 
         if (outcome.Succeeded)
-            Navigation.NavigateTo("/home");
+            Navigation.NavigateTo(SafeReturnUrl());
         else
             _error = outcome.Error;
+    }
+
+    // Only base-relative destinations — anything absolute or protocol-relative
+    // ("//evil.example") would be an open redirect.
+    private string SafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+            return "/home";
+        if (ReturnUrl.StartsWith("//") || ReturnUrl.StartsWith("/\\") || ReturnUrl.Contains(':'))
+            return "/home";
+        return ReturnUrl.StartsWith('/') ? ReturnUrl : "/" + ReturnUrl;
     }
 }

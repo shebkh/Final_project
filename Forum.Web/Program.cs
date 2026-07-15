@@ -2,6 +2,7 @@
 using Blazored.LocalStorage;
 using Forum.Web.Components;
 using Forum.Web.Features.Auth;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Forum.Web.Features.Categories;
 using Forum.Web.Features.Moderation;
 using Forum.Web.Features.Search;
@@ -26,6 +27,17 @@ builder.Services.AddBlazoredLocalStorage();
 // Authorization core + cascading authentication state for <AuthorizeView> etc.
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
+
+// Minimal cookie scheme. Forum.Web never signs anyone into it (auth state lives in
+// the JWT + JwtAuthenticationStateProvider); it exists solely so an anonymous
+// hard-GET on an [Authorize] page challenges into a /login redirect instead of
+// throwing 500 for lack of a default challenge scheme.
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+        options.ReturnUrlParameter = "returnUrl";
+    });
 
 // Auth feature slice (token store, state provider, typed HttpClient).
 builder.Services.AddAuthFeature(builder.Configuration);
