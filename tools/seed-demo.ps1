@@ -21,12 +21,22 @@ $accounts = @(
 function Invoke-Api($method, $path, $token, $body) {
     $headers = @{}
     if ($token) { $headers.Authorization = "Bearer $token" }
-    $args = @{ Method = $method; Uri = "$ApiBase$path"; Headers = $headers }
+    $call = @{ Method = $method; Uri = "$ApiBase$path"; Headers = $headers }
     if ($null -ne $body) {
-        $args.ContentType = 'application/json'
-        $args.Body = ($body | ConvertTo-Json -Depth 5)
+        $call.ContentType = 'application/json'
+        $call.Body = ($body | ConvertTo-Json -Depth 5)
     }
-    Invoke-RestMethod @args
+    try {
+        Invoke-RestMethod @call
+    } catch [System.Net.WebException] {
+        # surface the API's validation message instead of a bare status code
+        $detail = ''
+        if ($_.Exception.Response) {
+            $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+            $detail = $reader.ReadToEnd()
+        }
+        throw "API call failed: $method $path -> $($_.Exception.Message) $detail"
+    }
 }
 
 # --- users: register, or log in if they already exist ---
@@ -53,7 +63,9 @@ $tokens['admin'] = (Invoke-Api Post '/api/auth/login' $null @{ userNameOrEmail =
 Write-Host "admin promoted to moderator"
 
 # --- categories: create the ones that are missing ---
-$existing = @(Invoke-Api Get '/api/categories' $null $null)
+# (the ForEach-Object passthrough matters: PS 5.1 returns a JSON array as one
+#  Object[] item, which breaks Where-Object filtering without it)
+$existing = @(Invoke-Api Get '/api/categories' $null $null | ForEach-Object { $_ })
 function Ensure-Category($name, $parentId) {
     $found = $existing | Where-Object { $_.name -eq $name } | Select-Object -First 1
     if ($found) { return $found.id }
