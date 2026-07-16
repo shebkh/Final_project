@@ -78,8 +78,8 @@ $catIntros  = Ensure-Category 'Introductions' $catGeneral
 $catDev     = Ensure-Category 'Development' $null
 
 # --- threads (skipped when a thread with the same title is already there) ---
-$page = Invoke-Api Get '/api/threads?page=1&pageSize=50' $null $null
-$existingTitles = @($page.items | ForEach-Object { $_.title })
+# GET /api/threads returns a plain array of summaries
+$existingTitles = @(Invoke-Api Get '/api/threads?page=1&pageSize=50' $null $null | ForEach-Object { $_.title })
 
 function New-Thread($token, $title, $body, $categoryId, $tags) {
     if ($existingTitles -contains $title) {
