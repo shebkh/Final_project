@@ -17,10 +17,23 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- Configuration sources beyond the defaults ---
+// Both load in EVERY environment on purpose: `dotnet ef` runs with no environment
+// set (= Production), where the default builder skips user-secrets — and it still
+// needs Jwt:Key and any machine-local connection-string override to build the host.
+// appsettings.Development.local.json is gitignored; it's the demo-machine override
+// (Docker SQL connection string + Jwt:Key) so committed config never changes.
+builder.Configuration.AddJsonFile("appsettings.Development.local.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddUserSecrets<Program>(optional: true);
+
 // --- Options ---
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
     ?? throw new InvalidOperationException("Missing 'Jwt' configuration section.");
+if (string.IsNullOrWhiteSpace(jwtOptions.Key))
+    throw new InvalidOperationException(
+        "Missing 'Jwt:Key'. Set it with: dotnet user-secrets set \"Jwt:Key\" \"<64+ random chars>\" --project Forum.Api " +
+        "— or put it in Forum.Api/appsettings.Development.local.json (gitignored).");
 
 // --- Database (EF Core 9, SQL Server / LocalDB) ---
 builder.Services.AddDbContext<AppDbContext>(opt =>
