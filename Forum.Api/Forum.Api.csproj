@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>f383ce23-829e-4b01-9113-0c2414ed5b1c</UserSecretsId>
+    <!-- Emit XML docs so the OpenAPI/Scalar UI shows endpoint + model descriptions.
+         CS1591 = "missing XML comment"; we only document the public API surface,
+         not every member, so silence that one warning. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +22,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.16.15" />
   </ItemGroup>
 
 </Project>

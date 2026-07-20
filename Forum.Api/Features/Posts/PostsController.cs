@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Forum.Api.Features.Posts;
 
 [ApiController]
+[Tags("Posts")]
 public sealed class PostsController(IPostService postService) : ControllerBase
 {
     // --- Nested under the parent thread: list + create ---
 
+    /// <summary>List the replies of a thread, oldest first.</summary>
     [HttpGet("api/threads/{threadId:int}/posts")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<PostResponse>), StatusCodes.Status200OK)]
@@ -26,6 +28,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
         return Ok(result.Value.Items);
     }
 
+    /// <summary>Reply to a thread. Fails with 409 if the thread is locked.</summary>
     [HttpPost("api/threads/{threadId:int}/posts")]
     [Authorize]
     [ProducesResponseType(typeof(PostResponse), StatusCodes.Status201Created)]
@@ -50,6 +53,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
 
     // --- Addressed by their own global id: get + update + delete ---
 
+    /// <summary>Get a single reply by its id.</summary>
     [HttpGet("api/posts/{id:int}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PostResponse), StatusCodes.Status200OK)]
@@ -60,6 +64,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
         return MapResult(result);
     }
 
+    /// <summary>Edit a reply you own (or any reply, as a moderator). Blocked on a locked thread.</summary>
     [HttpPut("api/posts/{id:int}")]
     [Authorize]
     [ProducesResponseType(typeof(PostResponse), StatusCodes.Status200OK)]
@@ -76,6 +81,7 @@ public sealed class PostsController(IPostService postService) : ControllerBase
         return MapResult(result);
     }
 
+    /// <summary>Delete a reply you own (or any reply, as a moderator).</summary>
     [HttpDelete("api/posts/{id:int}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

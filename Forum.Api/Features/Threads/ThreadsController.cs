@@ -8,8 +8,10 @@ namespace Forum.Api.Features.Threads;
 
 [ApiController]
 [Route("api/threads")]
+[Tags("Threads")]
 public sealed class ThreadsController(IThreadService threadService) : ControllerBase
 {
+    /// <summary>List threads (pinned first, newest next). Optional category and tag filters.</summary>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<ThreadSummaryResponse>), StatusCodes.Status200OK)]
@@ -26,6 +28,7 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         return Ok(items);
     }
 
+    /// <summary>Get a single thread with its full body, author, category and tags.</summary>
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ThreadDetailResponse), StatusCodes.Status200OK)]
@@ -36,6 +39,7 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         return MapResult(result);
     }
 
+    /// <summary>Create a new thread (Markdown body + optional tags). Requires authentication.</summary>
     [HttpPost]
     [Authorize]
     [ProducesResponseType(typeof(ThreadDetailResponse), StatusCodes.Status201Created)]
@@ -53,6 +57,7 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         return MapResult(result);
     }
 
+    /// <summary>Update a thread you own (title, body, category, tags).</summary>
     [HttpPut("{id:int}")]
     [Authorize]
     [ProducesResponseType(typeof(ThreadDetailResponse), StatusCodes.Status200OK)]
@@ -69,6 +74,7 @@ public sealed class ThreadsController(IThreadService threadService) : Controller
         return MapResult(result);
     }
 
+    /// <summary>Delete a thread you own (or any thread, as a moderator) with its replies and votes.</summary>
     [HttpDelete("{id:int}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

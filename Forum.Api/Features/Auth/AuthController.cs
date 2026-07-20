@@ -6,8 +6,10 @@ namespace Forum.Api.Features.Auth;
 
 [ApiController]
 [Route("api/auth")]
+[Tags("Auth")]
 public sealed class AuthController(IAuthService authService) : ControllerBase
 {
+    /// <summary>Register a new user and return a JWT for the created account.</summary>
     [HttpPost("register")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
@@ -19,6 +21,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
         return MapResult(result);
     }
 
+    /// <summary>Log in with a username or email and return a JWT bearer token.</summary>
     [HttpPost("login")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]

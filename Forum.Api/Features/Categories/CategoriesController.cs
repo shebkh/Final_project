@@ -7,8 +7,10 @@ namespace Forum.Api.Features.Categories;
 
 [ApiController]
 [Route("api/categories")]
+[Tags("Categories")]
 public sealed class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
+    /// <summary>List all categories (roots and their sub-categories) with thread counts.</summary>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<CategoryResponse>), StatusCodes.Status200OK)]
@@ -18,6 +20,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
         return Ok(items);
     }
 
+    /// <summary>Get a single category by id.</summary>
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
@@ -28,6 +31,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
         return MapResult(result);
     }
 
+    /// <summary>Create a category or sub-category. Moderators only.</summary>
     [HttpPost]
     [Authorize(Roles = ModeratorRole.Name)]
     [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status201Created)]
@@ -44,6 +48,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
         return MapResult(result);
     }
 
+    /// <summary>Rename or re-parent a category. Moderators only.</summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = ModeratorRole.Name)]
     [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
@@ -58,6 +63,7 @@ public sealed class CategoriesController(ICategoryService categoryService) : Con
         return MapResult(result);
     }
 
+    /// <summary>Delete a category (threads become uncategorized). Moderators only.</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = ModeratorRole.Name)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

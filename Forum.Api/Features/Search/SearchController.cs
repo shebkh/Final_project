@@ -6,8 +6,10 @@ namespace Forum.Api.Features.Search;
 
 [ApiController]
 [Route("api/search")]
+[Tags("Search")]
 public sealed class SearchController(ISearchService searchService) : ControllerBase
 {
+    /// <summary>Search threads and replies by keyword, optionally within a category. Paged.</summary>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedSearchResponse), StatusCodes.Status200OK)]

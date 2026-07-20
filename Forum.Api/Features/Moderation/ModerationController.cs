@@ -8,8 +8,10 @@ namespace Forum.Api.Features.Moderation;
 [ApiController]
 [Route("api/moderation")]
 [Authorize(Roles = ModeratorRole.Name)]
+[Tags("Moderation")]
 public sealed class ModerationController(IModerationService moderationService) : ControllerBase
 {
+    /// <summary>Pin or unpin a thread so it sorts to the top of the list. Moderators only.</summary>
     [HttpPut("threads/{threadId:int}/pin")]
     [ProducesResponseType(typeof(ThreadModerationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -22,6 +24,7 @@ public sealed class ModerationController(IModerationService moderationService) :
         return MapResult(result);
     }
 
+    /// <summary>Lock or unlock a thread; a locked thread rejects new and edited replies. Moderators only.</summary>
     [HttpPut("threads/{threadId:int}/lock")]
     [ProducesResponseType(typeof(ThreadModerationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -34,6 +37,7 @@ public sealed class ModerationController(IModerationService moderationService) :
         return MapResult(result);
     }
 
+    /// <summary>Move a thread to a different category (or to uncategorized). Moderators only.</summary>
     [HttpPut("threads/{threadId:int}/move")]
     [ProducesResponseType(typeof(ThreadModerationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

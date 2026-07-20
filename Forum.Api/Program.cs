@@ -1,5 +1,6 @@
 // Forum.Api/Program.cs
 using System.Text;
+using Forum.Api.Common.OpenApi;
 using Forum.Api.Common.Validation;
 using Forum.Api.Data;
 using Forum.Api.Features.Auth;
@@ -14,6 +15,7 @@ using Forum.Api.Features.Votes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,8 +94,12 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-// --- OpenAPI ---
-builder.Services.AddOpenApi();
+// --- OpenAPI (JWT security scheme + XML-doc summaries so Scalar shows descriptions) ---
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<JwtSecuritySchemeTransformer>();
+    options.AddOperationTransformer<XmlDocOperationTransformer>();
+});
 
 // --- Feature slices ---
 builder.Services.AddAuthFeature();
@@ -111,7 +117,10 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi();                 // OpenAPI document at /openapi/v1.json
+    app.MapScalarApiReference(options => options
+        .WithTitle("Quorum API")
+        .WithTheme(ScalarTheme.Purple));   // interactive API explorer at /scalar
 }
 
 app.UseHttpsRedirection();

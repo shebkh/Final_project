@@ -6,8 +6,10 @@ namespace Forum.Api.Features.Profiles;
 
 [ApiController]
 [Route("api/users")]
+[Tags("Profiles")]
 public sealed class ProfilesController(IProfileService profileService) : ControllerBase
 {
+    /// <summary>Get a user's public profile, including their reputation score.</summary>
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(UserProfileResponse), StatusCodes.Status200OK)]
@@ -23,6 +25,7 @@ public sealed class ProfilesController(IProfileService profileService) : Control
         };
     }
 
+    /// <summary>List the threads a user has started, newest first.</summary>
     [HttpGet("{id:int}/threads")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<ProfileThreadResponse>), StatusCodes.Status200OK)]
@@ -38,6 +41,7 @@ public sealed class ProfilesController(IProfileService profileService) : Control
         return Ok(result.Value.Items);
     }
 
+    /// <summary>List the replies a user has written, newest first.</summary>
     [HttpGet("{id:int}/posts")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<ProfilePostResponse>), StatusCodes.Status200OK)]

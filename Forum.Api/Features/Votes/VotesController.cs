@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Forum.Api.Features.Votes;
 
 [ApiController]
+[Tags("Votes")]
 public sealed class VotesController(IVoteService voteService) : ControllerBase
 {
     // ===== Thread votes =====
 
+    /// <summary>Get a thread's score and, if authenticated, the caller's own vote.</summary>
     [HttpGet("api/threads/{threadId:int}/vote")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(VoteTallyResponse), StatusCodes.Status200OK)]
@@ -20,6 +22,7 @@ public sealed class VotesController(IVoteService voteService) : ControllerBase
         return MapResult(result, "Thread not found.");
     }
 
+    /// <summary>Up/down-vote a thread (value +1 or -1). Sending the same value again clears it.</summary>
     [HttpPut("api/threads/{threadId:int}/vote")]
     [Authorize]
     [ProducesResponseType(typeof(VoteTallyResponse), StatusCodes.Status200OK)]
@@ -35,6 +38,7 @@ public sealed class VotesController(IVoteService voteService) : ControllerBase
         return MapResult(result, "Thread not found.");
     }
 
+    /// <summary>Remove the caller's vote on a thread.</summary>
     [HttpDelete("api/threads/{threadId:int}/vote")]
     [Authorize]
     [ProducesResponseType(typeof(VoteTallyResponse), StatusCodes.Status200OK)]
@@ -51,6 +55,7 @@ public sealed class VotesController(IVoteService voteService) : ControllerBase
 
     // ===== Post votes =====
 
+    /// <summary>Get a reply's score and, if authenticated, the caller's own vote.</summary>
     [HttpGet("api/posts/{postId:int}/vote")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(VoteTallyResponse), StatusCodes.Status200OK)]
@@ -61,6 +66,7 @@ public sealed class VotesController(IVoteService voteService) : ControllerBase
         return MapResult(result, "Reply not found.");
     }
 
+    /// <summary>Up/down-vote a reply (value +1 or -1). Sending the same value again clears it.</summary>
     [HttpPut("api/posts/{postId:int}/vote")]
     [Authorize]
     [ProducesResponseType(typeof(VoteTallyResponse), StatusCodes.Status200OK)]
@@ -76,6 +82,7 @@ public sealed class VotesController(IVoteService voteService) : ControllerBase
         return MapResult(result, "Reply not found.");
     }
 
+    /// <summary>Remove the caller's vote on a reply.</summary>
     [HttpDelete("api/posts/{postId:int}/vote")]
     [Authorize]
     [ProducesResponseType(typeof(VoteTallyResponse), StatusCodes.Status200OK)]
