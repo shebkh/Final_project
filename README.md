@@ -12,6 +12,7 @@ A discussion forum I built as my final project. Users register, start threads, r
 - Moderation: pin, lock, move between categories, delete
 - Search by keyword and/or category
 - Reputation = sum of votes on everything you wrote
+- Interactive API docs (Scalar) with live testing
 - Bonus: real-time notifications over SignalR (reply + vote toasts)
 
 ## Stack
@@ -22,6 +23,7 @@ A discussion forum I built as my final project. Users register, start threads, r
 - **Validation** — FluentValidation on the API, DataAnnotations on the forms
 - **Markdown** — Markdig (bodies are stored raw, rendered on the web side)
 - **Realtime** — SignalR
+- **API docs** — Scalar (OpenAPI)
 
 ## Running it
 
@@ -43,6 +45,13 @@ dotnet run --project Forum.Web --launch-profile https   # https://localhost:7225
 ```
 
 Open https://localhost:7225 — the landing page is at `/`, the forum starts at `/threads`.
+
+## API docs
+
+With the API running, open https://localhost:7294/scalar for an interactive explorer of
+every endpoint (grouped by feature). To test the protected ones, log in via
+`POST /api/auth/login`, copy the token from the response, hit the Authorize button and
+paste it in — then you can call create/vote/moderate endpoints straight from the page.
 
 ### Using Docker instead of LocalDB
 
