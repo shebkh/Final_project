@@ -17,6 +17,73 @@ html, body {
     font-family: 'Manrope', system-ui, sans-serif;
 }
 
+/* --- Animated motion background (behind the whole shell) --- */
+.forum-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* subtle base wash so orbs blend into, not float over, the near-black page */
+    background: radial-gradient(120% 120% at 50% -10%, #0c0c18 0%, #07070c 60%);
+}
+
+.forum-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.5;
+    will-change: transform;
+}
+
+.forum-orb-1 {
+    width: 44vw; height: 44vw;
+    top: -12vw; left: -8vw;
+    background: radial-gradient(circle at 30% 30%, #4a6ee0, transparent 70%);
+    animation: forum-drift-1 26s ease-in-out infinite;
+}
+
+.forum-orb-2 {
+    width: 40vw; height: 40vw;
+    top: 20vh; right: -12vw;
+    background: radial-gradient(circle at 50% 50%, #7a3be0, transparent 70%);
+    animation: forum-drift-2 32s ease-in-out infinite;
+}
+
+.forum-orb-3 {
+    width: 34vw; height: 34vw;
+    bottom: -14vw; left: 28vw;
+    background: radial-gradient(circle at 50% 50%, #2dd4bf, transparent 72%);
+    opacity: 0.32;
+    animation: forum-drift-3 38s ease-in-out infinite;
+}
+
+@keyframes forum-drift-1 {
+    0%,  100% { transform: translate(0, 0) scale(1); }
+    50%       { transform: translate(6vw, 5vh) scale(1.12); }
+}
+
+@keyframes forum-drift-2 {
+    0%,  100% { transform: translate(0, 0) scale(1); }
+    50%       { transform: translate(-7vw, 4vh) scale(1.08); }
+}
+
+@keyframes forum-drift-3 {
+    0%,  100% { transform: translate(0, 0) scale(1); }
+    50%       { transform: translate(4vw, -6vh) scale(1.15); }
+}
+
+/* Respect users who prefer no motion: keep the color wash, drop the drifting. */
+@media (prefers-reduced-motion: reduce) {
+    .forum-orb { animation: none; }
+}
+
+/* Shell content must sit above the fixed background layer. */
+.mud-layout {
+    position: relative;
+    z-index: 1;
+}
+
 /* FocusOnNavigate targets the page <h1>; no visible focus ring needed. */
 h1:focus {
     outline: none;
@@ -31,17 +98,32 @@ h1:focus {
 }
 
 .forum-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     font-family: 'Space Grotesk', 'Manrope', sans-serif;
     font-size: 1.3rem;
     font-weight: 700;
     letter-spacing: 0.02em;
-    color: #f1f1f8;
+    color: #fff;
     text-decoration: none;
     margin-right: 20px;
 }
 
+/* Gradient logo mark — same identity as the landing page's .q-logo-mark. */
+.forum-brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: linear-gradient(140deg, #7d97ff 0%, #4a6ee0 45%, #7a3be0 100%);
+    box-shadow:
+        0 0 22px -2px rgba(102, 130, 255, 0.85),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    flex-shrink: 0;
+}
+
 .forum-brand:hover {
-    color: #7a8ff0;
+    color: #c7d0ff;
 }
 
 .forum-nav {

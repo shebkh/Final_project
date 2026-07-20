@@ -19,9 +19,21 @@
 
 <MudProviders />
 
+@* Animated motion background: three drifting gradient orbs behind everything.
+   Fixed + aria-hidden + pointer-events:none so it never affects layout or input.
+   Pure CSS keyframes — works inside the static SSR layout (no JS/circuit needed). *@
+<div class="forum-bg" aria-hidden="true">
+    <span class="forum-orb forum-orb-1"></span>
+    <span class="forum-orb forum-orb-2"></span>
+    <span class="forum-orb forum-orb-3"></span>
+</div>
+
 <MudLayout>
     <MudAppBar Fixed="true" Elevation="0" Class="forum-appbar">
-        <a class="forum-brand" href="/">Quorum</a>
+        <a class="forum-brand" href="/">
+            <span class="forum-brand-mark"></span>
+            Quorum
+        </a>
         <nav class="forum-nav hidden sm:flex">
             <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/threads">Threads</MudButton>
             <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/categories">Categories</MudButton>
