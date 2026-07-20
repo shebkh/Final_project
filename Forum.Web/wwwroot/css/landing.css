@@ -412,6 +412,57 @@ body:has(.q-landing) { background: var(--bg-vignette); margin: 0; }
 }
 .q-step p { font-size: 14px; color: var(--text-secondary); }
 
+/* ============================================================== §4b PRICING */
+.q-price {
+  padding: 30px 26px; border-radius: 20px;
+  display: flex; flex-direction: column;
+}
+/* Featured tier stands out with an accent border + lift. */
+.q-price-featured {
+  border-color: rgba(74, 110, 224, 0.5);
+  box-shadow:
+    0 24px 60px -18px rgba(0, 0, 0, 0.72),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+    0 0 44px -10px rgba(74, 110, 224, 0.45);
+}
+.q-price-badge {
+  align-self: flex-start;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent);
+  padding: 3px 10px; border-radius: 999px; margin-bottom: 14px;
+  border: 1px solid rgba(74, 110, 224, 0.4); background: rgba(74, 110, 224, 0.1);
+}
+.q-price-name {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;
+}
+.q-price-amount {
+  font-family: var(--font-display); font-weight: 700; font-size: 40px;
+  letter-spacing: -0.02em; color: var(--text-primary); line-height: 1;
+}
+.q-price-amount span {
+  font-size: 15px; font-weight: 500; color: var(--text-muted);
+  letter-spacing: 0; margin-left: 4px;
+}
+.q-price-note {
+  font-size: 13.5px; color: var(--text-secondary);
+  margin: 12px 0 18px; min-height: 40px;
+}
+.q-price-list {
+  list-style: none; padding: 0; margin: 0 0 24px;
+  display: flex; flex-direction: column; gap: 10px; flex: 1;
+}
+.q-price-list li {
+  position: relative; padding-left: 24px;
+  font-size: 14px; color: var(--text-secondary);
+}
+/* Check mark before each feature. */
+.q-price-list li::before {
+  content: "✓"; position: absolute; left: 0; top: 0;
+  color: var(--accent); font-weight: 700;
+}
+.q-price .q-btn { width: 100%; }
+
 /* ================================================================ §5 STATS */
 .q-stats { padding: 60px 0 110px; }
 .q-grid-stats {
