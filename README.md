@@ -46,6 +46,25 @@ dotnet run --project Forum.Web --launch-profile https   # https://localhost:7225
 
 Open https://localhost:7225 — the landing page is at `/`, the forum starts at `/threads`.
 
+### One-command setup (Docker)
+
+On a fresh machine with the .NET 9 SDK, Docker Desktop (running) and git, `tools\setup-demo.ps1`
+does the whole setup in one go — checks your tools, starts a SQL Server 2022 container, writes
+`Forum.Api/appsettings.Development.local.json` with a fresh JWT key, and creates the database:
+
+```powershell
+.\tools\setup-demo.ps1
+```
+
+When it finishes it prints the exact commands to run the two apps and seed the demo data.
+
+### Gotchas
+
+- **Build fails with "file is locked by Forum.Web (####)"** — an app is still running and holding its `.exe`. Stop it (`Ctrl+C` in its terminal, or `taskkill /PID <pid> /F`), then rebuild.
+- **Always use the `https` launch profile.** On the plain http port the API 307-redirects to https and some clients drop the `Authorization` header on the redirect.
+- **`dotnet ef` runs as Production** (no environment set), so `appsettings.Development.local.json` and user-secrets are loaded in every environment on purpose. If migrations complain about a missing `Jwt:Key` or connection string, that local file is missing or empty.
+- **Reset demo data:** the seed script skips users/threads that already exist, so it's safe to re-run. To start clean with Docker, delete the container (`docker rm -f quorum-sql`) and re-run `setup-demo.ps1`.
+
 ## API docs
 
 With the API running, open https://localhost:7294/scalar for an interactive explorer of
