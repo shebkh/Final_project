@@ -77,7 +77,7 @@ Step 3 "Writing Forum.Api/appsettings.Development.local.json"
 
 $localCfg = Join-Path $repoRoot "Forum.Api/appsettings.Development.local.json"
 if ((Test-Path $localCfg) -and -not $Force) {
-    Warn "already exists — leaving it as-is (pass -Force to regenerate)"
+    Warn "already exists - leaving it as-is (pass -Force to regenerate)"
 } else {
     $bytes = New-Object byte[] 48
     [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
@@ -104,7 +104,7 @@ dotnet ef database update --project Forum.Api --startup-project Forum.Api | Out-
 Ok "database ForumDb created / up to date"
 
 # ---------------------------------------------------------------- 5. next steps
-Step 5 "Setup complete — next steps"
+Step 5 "Setup complete - next steps"
 $seedConn = "Server=localhost,1433;Database=ForumDb;User Id=sa;Password=$SaPassword;TrustServerCertificate=True"
 Write-Host @"
 
